@@ -138,7 +138,7 @@ true_cases <- suppressMessages(
 
 ```{r}
 total_cases_by_FIPS <- true_cases %>% 
-  subset(select=c(1,7)) %>% 
+  subset(select=c(3,4,10)) %>% 
   rename("FIPS_CODE" = geo_value) %>% 
   group_by(FIPS_CODE) %>% 
   summarise("total cases" = sum(value))

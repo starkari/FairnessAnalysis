@@ -1,0 +1,246 @@
+"","type","date","source_date","value"
+"1","1 week ahead prediction",2020-07-25,2020-07-18,530903
+"2","1 week ahead prediction",2020-08-01,2020-07-25,392178
+"3","1 week ahead prediction",2020-08-08,2020-08-01,358705
+"4","1 week ahead prediction",2020-08-15,2020-08-08,298961
+"5","1 week ahead prediction",2020-08-22,2020-08-15,237225
+"6","1 week ahead prediction",2020-08-29,2020-08-22,205562
+"7","1 week ahead prediction",2020-09-05,2020-08-29,207316
+"8","1 week ahead prediction",2020-09-12,2020-09-05,205856
+"9","1 week ahead prediction",2020-09-19,2020-09-12,172935
+"10","1 week ahead prediction",2020-09-26,2020-09-19,215205
+"11","1 week ahead prediction",2020-10-03,2020-09-26,212887
+"12","1 week ahead prediction",2020-10-10,2020-10-03,219307
+"13","1 week ahead prediction",2020-10-17,2020-10-10,272663
+"14","1 week ahead prediction",2020-10-24,2020-10-17,317209
+"15","1 week ahead prediction",2020-10-31,2020-10-24,396726
+"16","1 week ahead prediction",2020-11-07,2020-10-31,564825
+"17","1 week ahead prediction",2020-11-14,2020-11-07,792689
+"18","1 week ahead prediction",2020-11-21,2020-11-14,1139663
+"19","1 week ahead prediction",2020-11-28,2020-11-21,1216202
+"20","1 week ahead prediction",2020-12-05,2020-11-28,1088027
+"21","1 week ahead prediction",2020-12-12,2020-12-05,1316492
+"22","1 week ahead prediction",2020-12-19,2020-12-12,1469919
+"23","1 week ahead prediction",2020-12-26,2020-12-19,1375061
+"24","1 week ahead prediction",2021-01-02,2020-12-26,1084174
+"25","1 week ahead prediction",2021-01-09,2021-01-02,1128533
+"26","1 week ahead prediction",2021-01-16,2021-01-09,1538892
+"27","1 week ahead prediction",2021-01-23,2021-01-16,1353345
+"28","1 week ahead prediction",2021-01-30,2021-01-23,894528
+"29","1 week ahead prediction",2021-02-06,2021-01-30,730592
+"30","1 week ahead prediction",2021-02-13,2021-02-06,556066
+"31","1 week ahead prediction",2021-02-20,2021-02-13,414869
+"32","1 week ahead prediction",2021-02-27,2021-02-20,280561
+"33","1 week ahead prediction",2021-03-06,2021-02-27,292251
+"34","1 week ahead prediction",2021-03-13,2021-03-06,290973
+"35","1 week ahead prediction",2021-03-20,2021-03-13,268256
+"36","1 week ahead prediction",2021-03-27,2021-03-20,293399
+"37","1 week ahead prediction",2021-04-03,2021-03-27,376232
+"38","1 week ahead prediction",2021-04-10,2021-04-03,412185
+"39","1 week ahead prediction",2021-04-17,2021-04-10,443094
+"40","1 week ahead prediction",2021-04-24,2021-04-17,433834
+"41","1 week ahead prediction",2021-05-01,2021-04-24,326280
+"42","1 week ahead prediction",2021-05-08,2021-05-01,268994
+"43","1 week ahead prediction",2021-05-15,2021-05-08,210750
+"44","1 week ahead prediction",2021-05-22,2021-05-15,169219
+"45","1 week ahead prediction",2021-05-29,2021-05-22,116605
+"46","1 week ahead prediction",2021-06-05,2021-05-29,94777
+"47","1 week ahead prediction",2021-06-12,2021-06-05,61211
+"48","1 week ahead prediction",2021-06-19,2021-06-12,70842
+"49","1 week ahead prediction",2021-06-26,2021-06-19,52102
+"50","2 week ahead prediction",2020-08-01,2020-07-18,503576
+"51","2 week ahead prediction",2020-08-08,2020-07-25,398374
+"52","2 week ahead prediction",2020-08-15,2020-08-01,365065
+"53","2 week ahead prediction",2020-08-22,2020-08-08,304668
+"54","2 week ahead prediction",2020-08-29,2020-08-15,254130
+"55","2 week ahead prediction",2020-09-05,2020-08-22,216665
+"56","2 week ahead prediction",2020-09-12,2020-08-29,217550
+"57","2 week ahead prediction",2020-09-19,2020-09-05,216794
+"58","2 week ahead prediction",2020-09-26,2020-09-12,182330
+"59","2 week ahead prediction",2020-10-03,2020-09-19,225610
+"60","2 week ahead prediction",2020-10-10,2020-09-26,225869
+"61","2 week ahead prediction",2020-10-17,2020-10-03,229779
+"62","2 week ahead prediction",2020-10-24,2020-10-10,275908
+"63","2 week ahead prediction",2020-10-31,2020-10-17,326708
+"64","2 week ahead prediction",2020-11-07,2020-10-24,407188
+"65","2 week ahead prediction",2020-11-14,2020-10-31,562405
+"66","2 week ahead prediction",2020-11-21,2020-11-07,785790
+"67","2 week ahead prediction",2020-11-28,2020-11-14,1124853
+"68","2 week ahead prediction",2020-12-05,2020-11-21,1215230
+"69","2 week ahead prediction",2020-12-12,2020-11-28,1092238
+"70","2 week ahead prediction",2020-12-19,2020-12-05,1306721
+"71","2 week ahead prediction",2020-12-26,2020-12-12,1462263
+"72","2 week ahead prediction",2021-01-02,2020-12-19,1405429
+"73","2 week ahead prediction",2021-01-09,2020-12-26,1131833
+"74","2 week ahead prediction",2021-01-16,2021-01-02,1177770
+"75","2 week ahead prediction",2021-01-23,2021-01-09,1553758
+"76","2 week ahead prediction",2021-01-30,2021-01-16,1385853
+"77","2 week ahead prediction",2021-02-06,2021-01-23,974363
+"78","2 week ahead prediction",2021-02-13,2021-01-30,789034
+"79","2 week ahead prediction",2021-02-20,2021-02-06,596209
+"80","2 week ahead prediction",2021-02-27,2021-02-13,436182
+"81","2 week ahead prediction",2021-03-06,2021-02-20,304932
+"82","2 week ahead prediction",2021-03-13,2021-02-27,309281
+"83","2 week ahead prediction",2021-03-20,2021-03-06,300752
+"84","2 week ahead prediction",2021-03-27,2021-03-13,281128
+"85","2 week ahead prediction",2021-04-03,2021-03-20,318635
+"86","2 week ahead prediction",2021-04-10,2021-03-27,380176
+"87","2 week ahead prediction",2021-04-17,2021-04-03,416216
+"88","2 week ahead prediction",2021-04-24,2021-04-10,449319
+"89","2 week ahead prediction",2021-05-01,2021-04-17,445754
+"90","2 week ahead prediction",2021-05-08,2021-04-24,344024
+"91","2 week ahead prediction",2021-05-15,2021-05-01,283579
+"92","2 week ahead prediction",2021-05-22,2021-05-08,224927
+"93","2 week ahead prediction",2021-05-29,2021-05-15,178700
+"94","2 week ahead prediction",2021-06-05,2021-05-22,122978
+"95","2 week ahead prediction",2021-06-12,2021-05-29,99967
+"96","2 week ahead prediction",2021-06-19,2021-06-05,68139
+"97","2 week ahead prediction",2021-06-26,2021-06-12,73097
+"98","2 week ahead prediction",2021-07-03,2021-06-19,56137
+"99","3 week ahead prediction",2020-08-08,2020-07-18,478216
+"100","3 week ahead prediction",2020-08-15,2020-07-25,403560
+"101","3 week ahead prediction",2020-08-22,2020-08-01,377100
+"102","3 week ahead prediction",2020-08-29,2020-08-08,324337
+"103","3 week ahead prediction",2020-09-05,2020-08-15,274851
+"104","3 week ahead prediction",2020-09-12,2020-08-22,233801
+"105","3 week ahead prediction",2020-09-19,2020-08-29,229547
+"106","3 week ahead prediction",2020-09-26,2020-09-05,231761
+"107","3 week ahead prediction",2020-10-03,2020-09-12,193125
+"108","3 week ahead prediction",2020-10-10,2020-09-19,237797
+"109","3 week ahead prediction",2020-10-17,2020-09-26,241534
+"110","3 week ahead prediction",2020-10-24,2020-10-03,245206
+"111","3 week ahead prediction",2020-10-31,2020-10-10,281959
+"112","3 week ahead prediction",2020-11-07,2020-10-17,336224
+"113","3 week ahead prediction",2020-11-14,2020-10-24,415907
+"114","3 week ahead prediction",2020-11-21,2020-10-31,559088
+"115","3 week ahead prediction",2020-11-28,2020-11-07,758460
+"116","3 week ahead prediction",2020-12-05,2020-11-14,1086568
+"117","3 week ahead prediction",2020-12-12,2020-11-21,1185149
+"118","3 week ahead prediction",2020-12-19,2020-11-28,1078805
+"119","3 week ahead prediction",2020-12-26,2020-12-05,1278416
+"120","3 week ahead prediction",2021-01-02,2020-12-12,1435407
+"121","3 week ahead prediction",2021-01-09,2020-12-19,1429777
+"122","3 week ahead prediction",2021-01-16,2020-12-26,1185833
+"123","3 week ahead prediction",2021-01-23,2021-01-02,1249657
+"124","3 week ahead prediction",2021-01-30,2021-01-09,1569335
+"125","3 week ahead prediction",2021-02-06,2021-01-16,1390108
+"126","3 week ahead prediction",2021-02-13,2021-01-23,1040520
+"127","3 week ahead prediction",2021-02-20,2021-01-30,873620
+"128","3 week ahead prediction",2021-02-27,2021-02-06,664200
+"129","3 week ahead prediction",2021-03-06,2021-02-13,486430
+"130","3 week ahead prediction",2021-03-13,2021-02-20,348050
+"131","3 week ahead prediction",2021-03-20,2021-02-27,339223
+"132","3 week ahead prediction",2021-03-27,2021-03-06,319621
+"133","3 week ahead prediction",2021-04-03,2021-03-13,299537
+"134","3 week ahead prediction",2021-04-10,2021-03-20,329008
+"135","3 week ahead prediction",2021-04-17,2021-03-27,384219
+"136","3 week ahead prediction",2021-04-24,2021-04-03,420248
+"137","3 week ahead prediction",2021-05-01,2021-04-10,453599
+"138","3 week ahead prediction",2021-05-08,2021-04-17,449264
+"139","3 week ahead prediction",2021-05-15,2021-04-24,363034
+"140","3 week ahead prediction",2021-05-22,2021-05-01,302264
+"141","3 week ahead prediction",2021-05-29,2021-05-08,244403
+"142","3 week ahead prediction",2021-06-05,2021-05-15,194992
+"143","3 week ahead prediction",2021-06-12,2021-05-22,136454
+"144","3 week ahead prediction",2021-06-19,2021-05-29,112532
+"145","3 week ahead prediction",2021-06-26,2021-06-05,77509
+"146","3 week ahead prediction",2021-07-03,2021-06-12,77905
+"147","3 week ahead prediction",2021-07-10,2021-06-19,62173
+"148","4 week ahead prediction",2020-08-15,2020-07-18,452577
+"149","4 week ahead prediction",2020-08-22,2020-07-25,413567
+"150","4 week ahead prediction",2020-08-29,2020-08-01,394723
+"151","4 week ahead prediction",2020-09-05,2020-08-08,345434
+"152","4 week ahead prediction",2020-09-12,2020-08-15,299963
+"153","4 week ahead prediction",2020-09-19,2020-08-22,255760
+"154","4 week ahead prediction",2020-09-26,2020-08-29,246501
+"155","4 week ahead prediction",2020-10-03,2020-09-05,248446
+"156","4 week ahead prediction",2020-10-10,2020-09-12,208966
+"157","4 week ahead prediction",2020-10-17,2020-09-19,253129
+"158","4 week ahead prediction",2020-10-24,2020-09-26,259770
+"159","4 week ahead prediction",2020-10-31,2020-10-03,262456
+"160","4 week ahead prediction",2020-11-07,2020-10-10,297327
+"161","4 week ahead prediction",2020-11-14,2020-10-17,350427
+"162","4 week ahead prediction",2020-11-21,2020-10-24,426459
+"163","4 week ahead prediction",2020-11-28,2020-10-31,545561
+"164","4 week ahead prediction",2020-12-05,2020-11-07,725583
+"165","4 week ahead prediction",2020-12-12,2020-11-14,1016922
+"166","4 week ahead prediction",2020-12-19,2020-11-21,1157624
+"167","4 week ahead prediction",2020-12-26,2020-11-28,1089504
+"168","4 week ahead prediction",2021-01-02,2020-12-05,1271591
+"169","4 week ahead prediction",2021-01-09,2020-12-12,1443663
+"170","4 week ahead prediction",2021-01-16,2020-12-19,1419929
+"171","4 week ahead prediction",2021-01-23,2020-12-26,1263883
+"172","4 week ahead prediction",2021-01-30,2021-01-02,1281930
+"173","4 week ahead prediction",2021-02-06,2021-01-09,1593376
+"174","4 week ahead prediction",2021-02-13,2021-01-16,1431076
+"175","4 week ahead prediction",2021-02-20,2021-01-23,1103405
+"176","4 week ahead prediction",2021-02-27,2021-01-30,902729
+"177","4 week ahead prediction",2021-03-06,2021-02-06,724142
+"178","4 week ahead prediction",2021-03-13,2021-02-13,558765
+"179","4 week ahead prediction",2021-03-20,2021-02-20,404953
+"180","4 week ahead prediction",2021-03-27,2021-02-27,388583
+"181","4 week ahead prediction",2021-04-03,2021-03-06,346372
+"182","4 week ahead prediction",2021-04-10,2021-03-13,322172
+"183","4 week ahead prediction",2021-04-17,2021-03-20,340164
+"184","4 week ahead prediction",2021-04-24,2021-03-27,382400
+"185","4 week ahead prediction",2021-05-01,2021-04-03,419828
+"186","4 week ahead prediction",2021-05-08,2021-04-10,446331
+"187","4 week ahead prediction",2021-05-15,2021-04-17,455364
+"188","4 week ahead prediction",2021-05-22,2021-04-24,382543
+"189","4 week ahead prediction",2021-05-29,2021-05-01,322471
+"190","4 week ahead prediction",2021-06-05,2021-05-08,267145
+"191","4 week ahead prediction",2021-06-12,2021-05-15,215007
+"192","4 week ahead prediction",2021-06-19,2021-05-22,156540
+"193","4 week ahead prediction",2021-06-26,2021-05-29,127871
+"194","4 week ahead prediction",2021-07-03,2021-06-05,89646
+"195","4 week ahead prediction",2021-07-10,2021-06-12,86571
+"196","4 week ahead prediction",2021-07-17,2021-06-19,70879
+"197","incidence cases",2020-07-18,2020-07-18,456918
+"198","incidence cases",2020-07-25,2020-07-25,456028
+"199","incidence cases",2020-08-01,2020-08-01,436659
+"200","incidence cases",2020-08-08,2020-08-08,371596
+"201","incidence cases",2020-08-15,2020-08-15,357008
+"202","incidence cases",2020-08-22,2020-08-22,300791
+"203","incidence cases",2020-08-29,2020-08-29,286898
+"204","incidence cases",2020-09-05,2020-09-05,286079
+"205","incidence cases",2020-09-12,2020-09-12,238720
+"206","incidence cases",2020-09-19,2020-09-19,278212
+"207","incidence cases",2020-09-26,2020-09-26,304866
+"208","incidence cases",2020-10-03,2020-10-03,297276
+"209","incidence cases",2020-10-10,2020-10-10,335425
+"210","incidence cases",2020-10-17,2020-10-17,384140
+"211","incidence cases",2020-10-24,2020-10-24,472820
+"212","incidence cases",2020-10-31,2020-10-31,553750
+"213","incidence cases",2020-11-07,2020-11-07,799787
+"214","incidence cases",2020-11-14,2020-11-14,1011846
+"215","incidence cases",2020-11-21,2020-11-21,1189240
+"216","incidence cases",2020-11-28,2020-11-28,1136520
+"217","incidence cases",2020-12-05,2020-12-05,1337382
+"218","incidence cases",2020-12-12,2020-12-12,1484097
+"219","incidence cases",2020-12-19,2020-12-19,1497371
+"220","incidence cases",2020-12-26,2020-12-26,1309345
+"221","incidence cases",2021-01-02,2021-01-02,1424509
+"222","incidence cases",2021-01-09,2021-01-09,1685959
+"223","incidence cases",2021-01-16,2021-01-16,1545420
+"224","incidence cases",2021-01-23,2021-01-23,1221516
+"225","incidence cases",2021-01-30,2021-01-30,1041790
+"226","incidence cases",2021-02-06,2021-02-06,843798
+"227","incidence cases",2021-02-13,2021-02-13,660692.0000002
+"228","incidence cases",2021-02-20,2021-02-20,471132.0000001
+"229","incidence cases",2021-02-27,2021-02-27,472955.9999998
+"230","incidence cases",2021-03-06,2021-03-06,419366.0000002
+"231","incidence cases",2021-03-13,2021-03-13,442762
+"232","incidence cases",2021-03-20,2021-03-20,378810.0000001
+"233","incidence cases",2021-03-27,2021-03-27,430074.0000002
+"234","incidence cases",2021-04-03,2021-04-03,446603.9999999
+"235","incidence cases",2021-04-10,2021-04-10,470328.0000001
+"236","incidence cases",2021-04-17,2021-04-17,467683.0000002
+"237","incidence cases",2021-04-24,2021-04-24,407958
+"238","incidence cases",2021-05-01,2021-05-01,341076.0000002
+"239","incidence cases",2021-05-08,2021-05-08,290949.9999998
+"240","incidence cases",2021-05-15,2021-05-15,234517.0000002
+"241","incidence cases",2021-05-22,2021-05-22,177829.9999998
+"242","incidence cases",2021-05-29,2021-05-29,145795.0000002
+"243","incidence cases",2021-06-05,2021-06-05,101259.0000001
+"244","incidence cases",2021-06-12,2021-06-12,102566.9999995
+"245","incidence cases",2021-06-19,2021-06-19,79260.9999998
