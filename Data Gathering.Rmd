@@ -1,0 +1,650 @@
+---
+title: "Data Gathering"
+author: "Ariane Stark"
+date: "10/29/2020"
+output: pdf_document
+---
+
+This is pulling and combining all the data
+
+```{r include=FALSE}
+library(readr)
+library(readxl)
+library(zoltr)
+library(tidyverse)
+library(covidcast)
+library(MMWRweek)
+source("https://raw.githubusercontent.com/reichlab/covid19-forecast-hub/master/code/processing-fxns/get_next_saturday.R")
+```
+
+```{r message=FALSE}
+#load  pop county data
+Pop_County <- read_csv("data-pull/Population_-_County.csv") %>% 
+  rename(Total_Pop = B01001_001E) %>% 
+  subset(select=c(6:7))
+
+Pop_County_GEO_FIPS <- read_csv("data-pull/Population_-_County.csv") %>% 
+  subset(select = c(2,6))
+
+Pop_Age_Sex_no_FIPS <-
+  read_csv("data-pull/Population_by_Age_and_Sex_-_Counties.csv") %>% 
+  subset(select = -c(1))
+
+Pop_Age_Sex <- full_join(Pop_County_GEO_FIPS,Pop_Age_Sex_no_FIPS)
+
+Pop_Age_Sex <- Pop_Age_Sex %>% 
+  rename(Total_Pop = 5) %>% 
+  rename(Male_Pop = 7) %>% 
+  transform(Male_Pop_Prop = Male_Pop/Total_Pop) %>% 
+  subset(select = c(2,127))
+
+
+Pop_Race <- read_csv("data-pull/Race_and_Ethnicity_-_County.csv") %>% 
+  rename(Total_White = 6) %>% 
+  rename(Total_Black = 8) %>% 
+  rename(Total_Amercan_Indian = 10) %>% 
+  rename(Total_Asian = 12) %>% 
+  rename(Total_PacI = 14) %>% 
+  rename(Total_Some_Other = 16) %>% 
+  rename(Total_2plus = 18) %>% 
+  rename(Total_Not_Hispanic = 20) %>% 
+  rename(Total_Hispanic = 22) %>% 
+  subset(select = c(5,6,8,20,22)) %>% 
+  transform(Total_Other = Total_Hispanic + Total_Not_Hispanic -
+              Total_Black - Total_White) %>% 
+  subset(select = c(1:3,5:6))
+
+```
+
+
+```{r message=FALSE}
+Pop_Poverty_NoFIPS <-
+  read_csv("data-pull/Population_and_Poverty_-_Counties.csv") %>%
+                                 subset(select = -c(1))
+
+Pop_Poverty <- full_join(Pop_County_GEO_FIPS,Pop_Poverty_NoFIPS)
+  
+  
+  
+Pop_Poverty <- Pop_Poverty %>%
+  rename(Total_Households_Below_Poverty = 24) %>%
+  rename(Total_Households_Above_Poverty = 25) %>%
+  subset(select = c(2,24:25))
+```
+
+
+```{r message=FALSE}
+#clean up data 
+joined_1 <- full_join(Pop_County, Pop_Age_Sex)
+joined_2 <- full_join(joined_1, Pop_Race)
+joined_3 <- full_join(joined_2,Pop_Poverty)
+
+full_data <- joined_3
+
+```
+
+```{r message=FALSE, warning=FALSE}
+#remove extra data sets to clean up global environment
+remove(Pop_Age_Sex,Pop_Age_Sex_no_FIPS,Pop_County,Pop_County_GEO_FIPS,Pop_Poverty,
+       Pop_Poverty_NoFIPS,Pop_Race,joined_1,joined_2,joined_3)
+```
+
+
+```{r}
+zoltar_connection <- new_connection()
+zoltar_authenticate(zoltar_connection, Sys.getenv("Z_USERNAME"), Sys.getenv("Z_PASSWORD"))
+zoltar_connection
+```
+
+
+```{r}
+covidhub_project_url <- "https://zoltardata.com/api/project/44/"
+the_project_info <- project_info(zoltar_connection, covidhub_project_url)
+project_url <- covidhub_project_url
+the_models <- models(zoltar_connection, project_url)
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+ensemble_query_inc_cases <- suppressMessages(
+  do_zoltar_query(zoltar_connection,
+                               project_url = covidhub_project_url,
+                               query_type =  "forecasts",
+                               models = c("COVIDhub-ensemble"),
+                               types = c("point"),
+                               targets = paste(1:4, "wk ahead inc case")
+                               ) )
+```
+
+```{r message=FALSE, warning=FALSE}
+baseline_query_inc_cases <- suppressMessages(
+  do_zoltar_query(zoltar_connection,
+                               project_url = covidhub_project_url,
+                               query_type =  "forecasts",
+                               models = c("COVIDhub-baseline"),
+                               types = c("point"),
+                               targets = paste(1:4, "wk ahead inc case")
+                               ) )
+```
+
+
+```{r}
+true_cases <- suppressMessages(
+  covidcast_signal(data_source = "jhu-csse",
+                   signal = "confirmed_incidence_num",
+                   geo_type = "county"))
+```
+
+```{r}
+total_cases_by_FIPS <- true_cases %>% 
+  subset(select=c(1,7)) %>% 
+  rename("FIPS_CODE" = geo_value) %>% 
+  group_by(FIPS_CODE) %>% 
+  summarise("total cases" = sum(value))
+
+truth_inc_cases_2020 <- true_cases %>% 
+  filter(time_value >= "2020-07-01") %>% 
+  #filter(time_value <= "2020-12-31") %>% 
+  mutate(epiweek=MMWRweek(time_value)$MMWRweek) %>% 
+  mutate(target_end_date = MMWRweek2Date(rep(2020,n()),epiweek,rep(7,n())),
+         model ="observed data (JHU)") %>% 
+  group_by(target_end_date, geo_value) %>% 
+  summarise(value=sum(value))
+
+truth_inc_cases_2021 <- true_cases %>% 
+  filter(time_value >= "2021-01-01") %>% 
+  mutate(epiweek=MMWRweek(time_value)$MMWRweek) %>% 
+  mutate(target_end_date = MMWRweek2Date(rep(2021,n()),epiweek,rep(7,n())),
+         model ="observed data (JHU)") %>% 
+  group_by(target_end_date, geo_value) %>% 
+  summarise(value=sum(value))
+
+truth_inc_cases <- rbind(truth_inc_cases_2020, truth_inc_cases_2021)
+
+remove(truth_inc_cases_2020,truth_inc_cases_2021)
+  
+  
+```
+
+```{r}
+ensemble_inc_cases <- ensemble_query_inc_cases %>% 
+  mutate("target_end_date" = get_next_saturday(timezero)-7) %>% 
+  mutate(epiweek=MMWRweek(timezero)$MMWRweek) %>% 
+  pivot_wider(names_from = target, values_from = value) %>% 
+  subset(select = -c(6:13)) %>% 
+  mutate("4 week ahead end date" = get_next_saturday(timezero + 7*(3))) %>% 
+  mutate("3 week ahead end date" = get_next_saturday(timezero + 7*(2))) %>% 
+  mutate("2 week ahead end date" = get_next_saturday(timezero + 7*(1))) %>% 
+  mutate("1 week ahead end date" = get_next_saturday(timezero + 7*(0))) %>% 
+  rename (geo_value = unit) %>% 
+  subset(select = -c(1,3,5))
+
+
+combined_part_1 <- inner_join(truth_inc_cases,ensemble_inc_cases,
+                      by=c("geo_value","target_end_date")) %>% 
+  rename("true num incidence cases" = value) %>% 
+  rename("last date of week"=target_end_date) %>% 
+  rename("timezero (date of reporting)" = timezero) %>% 
+  rename("fips_code" = geo_value) %>% 
+  rename("4 week ahead prediction" = "4 wk ahead inc case") %>% 
+  rename("3 week ahead prediction" = "3 wk ahead inc case") %>% 
+  rename("2 week ahead prediction" = "2 wk ahead inc case") %>% 
+  rename("1 week ahead prediction" = "1 wk ahead inc case")
+
+combined_part_2 <- combined_part_1 %>%
+  group_by(fips_code) %>% 
+  mutate("4 weeks ahead truth" = lead(`true num incidence cases`,4,
+                                      order_by = `last date of week`)) %>% 
+  mutate("3 weeks ahead truth" = lead(`true num incidence cases`,3,
+                                      order_by = `last date of week`)) %>% 
+  mutate("2 weeks ahead truth" = lead(`true num incidence cases`,2,
+                                      order_by = `last date of week`)) %>% 
+  mutate("1 weeks ahead truth" = lead(`true num incidence cases`,1,
+                                      order_by = `last date of week`)) %>% 
+  mutate("4 week ahead error" = `4 week ahead prediction`-`4 weeks ahead truth`) %>% 
+  mutate("3 week ahead error" = `3 week ahead prediction`-`3 weeks ahead truth`) %>% 
+  mutate("2 week ahead error" = `2 week ahead prediction`-`2 weeks ahead truth`) %>%
+  mutate("1 week ahead error" = `1 week ahead prediction`-`1 weeks ahead truth`) %>% 
+  mutate("4 week ahead absolute error" = 
+           abs(`4 week ahead prediction`-`4 weeks ahead truth`)) %>% 
+  mutate("3 week ahead absolute error" = 
+           abs(`3 week ahead prediction`-`3 weeks ahead truth`)) %>% 
+  mutate("2 week ahead absolute error" = 
+           abs(`2 week ahead prediction`-`2 weeks ahead truth`)) %>%
+  mutate("1 week ahead absolute error" = 
+          abs(`1 week ahead prediction`-`1 weeks ahead truth`))
+
+combined <- combined_part_2[,c(2,4,1,5,3,6:9,14:25,10:13)]
+remove(combined_part_1,combined_part_2)
+```
+
+```{r}
+baseline_inc_cases <- baseline_query_inc_cases %>% 
+  mutate("target_end_date" = get_next_saturday(timezero)-7) %>% 
+  mutate(epiweek=MMWRweek(timezero)$MMWRweek) %>% 
+  pivot_wider(names_from = target, values_from = value) %>% 
+  subset(select = -c(6:13)) %>% 
+  mutate("4 week ahead end date" = get_next_saturday(timezero + 7*(3))) %>% 
+  mutate("3 week ahead end date" = get_next_saturday(timezero + 7*(2))) %>% 
+  mutate("2 week ahead end date" = get_next_saturday(timezero + 7*(1))) %>% 
+  mutate("1 week ahead end date" = get_next_saturday(timezero + 7*(0))) %>% 
+  rename (geo_value = unit) %>% 
+  subset(select = -c(1,3,5))
+
+
+combined_part_1 <- inner_join(truth_inc_cases,baseline_inc_cases,
+                      by=c("geo_value","target_end_date")) %>% 
+  rename("true num incidence cases" = value) %>% 
+  rename("last date of week"=target_end_date) %>% 
+  rename("timezero (date of reporting)" = timezero) %>% 
+  rename("fips_code" = geo_value) %>% 
+  rename("4 week ahead prediction" = "4 wk ahead inc case") %>% 
+  rename("3 week ahead prediction" = "3 wk ahead inc case") %>% 
+  rename("2 week ahead prediction" = "2 wk ahead inc case") %>% 
+  rename("1 week ahead prediction" = "1 wk ahead inc case")
+
+combined_part_2 <- combined_part_1 %>%
+  group_by(fips_code) %>% 
+  mutate("4 weeks ahead truth" = lead(`true num incidence cases`,4,
+                                      order_by = `last date of week`)) %>% 
+  mutate("3 weeks ahead truth" = lead(`true num incidence cases`,3,
+                                      order_by = `last date of week`)) %>% 
+  mutate("2 weeks ahead truth" = lead(`true num incidence cases`,2,
+                                      order_by = `last date of week`)) %>% 
+  mutate("1 weeks ahead truth" = lead(`true num incidence cases`,1,
+                                      order_by = `last date of week`)) %>% 
+  mutate("4 week ahead error" = `4 week ahead prediction`-`4 weeks ahead truth`) %>% 
+  mutate("3 week ahead error" = `3 week ahead prediction`-`3 weeks ahead truth`) %>% 
+  mutate("2 week ahead error" = `2 week ahead prediction`-`2 weeks ahead truth`) %>%
+  mutate("1 week ahead error" = `1 week ahead prediction`-`1 weeks ahead truth`) %>% 
+  mutate("4 week ahead absolute error" = 
+           abs(`4 week ahead prediction`-`4 weeks ahead truth`)) %>% 
+  mutate("3 week ahead absolute error" = 
+           abs(`3 week ahead prediction`-`3 weeks ahead truth`)) %>% 
+  mutate("2 week ahead absolute error" = 
+           abs(`2 week ahead prediction`-`2 weeks ahead truth`)) %>%
+  mutate("1 week ahead absolute error" = 
+          abs(`1 week ahead prediction`-`1 weeks ahead truth`))
+
+combined_baseline <- combined_part_2[,c(2,4,1,5,3,6:9,14:25,10:13)]
+remove(combined_part_1,combined_part_2)
+```
+
+
+```{r}
+me_by_fips <- combined %>% 
+  group_by(fips_code) %>% 
+  summarise_at(vars("4 week ahead error","3 week ahead error",
+                    "2 week ahead error","1 week ahead error"),
+               list("mean error" = mean),
+               na.rm = TRUE) %>% 
+  rename("FIPS_CODE" = fips_code) %>% 
+  rename("4 week ahead mean error" = 2 ) %>% 
+  rename("3 week ahead mean error" = 3 ) %>% 
+  rename("2 week ahead mean error" = 4 ) %>% 
+  rename("1 week ahead mean error" = 5 ) 
+
+mae_by_fips <- combined %>% 
+  group_by(fips_code) %>% 
+  summarise_at(vars("4 week ahead absolute error","3 week ahead absolute error",
+                    "2 week ahead absolute error","1 week ahead absolute error"),
+               list("mean absolute error" = mean),
+               na.rm = TRUE) %>% 
+  rename("FIPS_CODE" = fips_code) %>% 
+  rename("4 week ahead mean absolute error" = 2 ) %>% 
+  rename("3 week ahead mean absolute error" = 3 ) %>% 
+  rename("2 week ahead mean absolute error" = 4 ) %>% 
+  rename("1 week ahead mean absolute error" = 5 )
+
+```
+
+
+```{r}
+me_by_fips_baseline <- combined_baseline %>% 
+  group_by(fips_code) %>% 
+  summarise_at(vars("4 week ahead error","3 week ahead error",
+                    "2 week ahead error","1 week ahead error"),
+               list("mean error" = mean),
+               na.rm = TRUE) %>% 
+  rename("FIPS_CODE" = fips_code) %>% 
+  rename("4 week ahead mean error" = 2 ) %>% 
+  rename("3 week ahead mean error" = 3 ) %>% 
+  rename("2 week ahead mean error" = 4 ) %>% 
+  rename("1 week ahead mean error" = 5 ) 
+
+mae_by_fips_baseline <- combined_baseline %>% 
+  group_by(fips_code) %>% 
+  summarise_at(vars("4 week ahead absolute error","3 week ahead absolute error",
+                    "2 week ahead absolute error","1 week ahead absolute error"),
+               list("mean absolute error" = mean),
+               na.rm = TRUE) %>% 
+  rename("FIPS_CODE" = fips_code) %>% 
+  rename("4 week ahead mean absolute error" = 2 ) %>% 
+  rename("3 week ahead mean absolute error" = 3 ) %>% 
+  rename("2 week ahead mean absolute error" = 4 ) %>% 
+  rename("1 week ahead mean absolute error" = 5 )
+
+```
+
+```{r}
+quantile_by_fips <- combined %>% 
+  group_by(fips_code) %>% 
+  summarise_at(vars("4 week ahead absolute error","3 week ahead absolute error",
+                    "2 week ahead absolute error","1 week ahead absolute error"),
+               list("mean" = mean, 
+                    "median"=median, 
+                    "q1"=~quantile(.,prob=0.25, na.rm = TRUE),
+                    "q3" = ~quantile(.,prob = 0.75, na.rm = TRUE)),
+               na.rm = TRUE) %>% 
+  rename("FIPS_CODE" = fips_code) %>% 
+  rename("4 week ahead absolute error mean" = 2) %>% 
+  rename("3 week ahead absolute error mean" = 3) %>% 
+  rename("2 week ahead absolute error mean" = 4) %>% 
+  rename("1 week ahead absolute error mean" = 5) %>% 
+  rename("4 week ahead absolute error median" = 6) %>% 
+  rename("3 week ahead absolute error median" = 7) %>% 
+  rename("2 week ahead absolute error median" = 8) %>% 
+  rename("1 week ahead absolute error median" = 9) %>% 
+  rename("4 week ahead absolute error q1" = 10) %>% 
+  rename("3 week ahead absolute error q1" = 11) %>% 
+  rename("2 week ahead absolute error q1" = 12) %>% 
+  rename("1 week ahead absolute error q1" = 13) %>% 
+  rename("4 week ahead absolute error q3" = 14) %>% 
+  rename("3 week ahead absolute error q3" = 15) %>% 
+  rename("2 week ahead absolute error q3" = 16) %>% 
+  rename("1 week ahead absolute error q3" = 17) 
+
+
+```
+
+```{r}
+quantile_by_fips_baseline <- combined_baseline %>% 
+  group_by(fips_code) %>% 
+  summarise_at(vars("4 week ahead absolute error","3 week ahead absolute error",
+                    "2 week ahead absolute error","1 week ahead absolute error"),
+               list("mean" = mean, 
+                    "median"=median, 
+                    "q1"=~quantile(.,prob=0.25, na.rm = TRUE),
+                    "q3" = ~quantile(.,prob = 0.75, na.rm = TRUE)),
+               na.rm = TRUE) %>% 
+  rename("FIPS_CODE" = fips_code) %>% 
+  rename("4 week ahead absolute error mean" = 2) %>% 
+  rename("3 week ahead absolute error mean" = 3) %>% 
+  rename("2 week ahead absolute error mean" = 4) %>% 
+  rename("1 week ahead absolute error mean" = 5) %>% 
+  rename("4 week ahead absolute error median" = 6) %>% 
+  rename("3 week ahead absolute error median" = 7) %>% 
+  rename("2 week ahead absolute error median" = 8) %>% 
+  rename("1 week ahead absolute error median" = 9) %>% 
+  rename("4 week ahead absolute error q1" = 10) %>% 
+  rename("3 week ahead absolute error q1" = 11) %>% 
+  rename("2 week ahead absolute error q1" = 12) %>% 
+  rename("1 week ahead absolute error q1" = 13) %>% 
+  rename("4 week ahead absolute error q3" = 14) %>% 
+  rename("3 week ahead absolute error q3" = 15) %>% 
+  rename("2 week ahead absolute error q3" = 16) %>% 
+  rename("1 week ahead absolute error q3" = 17) 
+
+
+```
+
+
+```{r}
+errors <- inner_join(me_by_fips,quantile_by_fips, by="FIPS_CODE")
+errors_and_cases <- inner_join(total_cases_by_FIPS,errors)
+
+errors_baseline <- inner_join(me_by_fips_baseline,quantile_by_fips_baseline, by="FIPS_CODE")
+errors_and_cases_baseline <- inner_join(total_cases_by_FIPS,errors_baseline)
+```
+
+
+```{r}
+all_the_data <- inner_join(full_data,errors_and_cases, by="FIPS_CODE")
+all_the_data_baseline <- inner_join(full_data,errors_and_cases_baseline, by="FIPS_CODE")
+```
+
+
+```{r}
+remove(mae_by_fips)
+remove(me_by_fips)
+remove(quantile_by_fips)
+remove(errors)
+remove(errors_and_cases)
+
+remove(mae_by_fips_baseline)
+remove(me_by_fips_baseline)
+remove(quantile_by_fips_baseline)
+remove(errors_baseline)
+remove(errors_and_cases_baseline)
+```
+
+
+```{r eval=FALSE, include=FALSE}
+all_the_data$"black proportion categories" <-
+  cut(all_the_data$Total_Black/all_the_data$Total_Pop,seq(0,1,0.1))
+
+all_the_data$`Covid Case Quartile` = cut_number(all_the_data$`total cases`,
+                                                  n=4, labels=FALSE)
+
+all_the_data_baseline$"black proportion categories" <-
+  cut(all_the_data_baseline$Total_Black/all_the_data_baseline$Total_Pop,seq(0,1,0.1))
+
+all_the_data_baseline$`Covid Case Quartile` = cut_number(all_the_data_baseline$`total cases`,
+                                                  n=4, labels=FALSE)
+
+```
+
+
+```{r}
+
+case_truth <- combined[c(1,3,5)] %>% 
+  mutate(type = "incidence cases") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  mutate(source_date = date) %>% 
+  select(c(1,4,2,3,5))
+case_1_week_prediction <- combined[c(1,25,9,3)] %>% 
+  mutate(type = "1 week ahead prediction") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  rename(source_date = 4) %>% 
+  select(c(1,5,2,3,4))
+case_2_week_prediction <- combined[c(1,24,8,3)] %>% 
+  mutate(type = "2 week ahead prediction") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  rename(source_date = 4) %>% 
+  select(c(1,5,2,3,4))
+case_3_week_prediction <- combined[c(1,23,7,3)] %>% 
+  mutate(type = "3 week ahead prediction") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  rename(source_date = 4) %>% 
+  select(c(1,5,2,3,4))
+case_4_week_prediction <- combined[c(1,22,6,3)] %>% 
+  mutate(type = "4 week ahead prediction") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  rename(source_date = 4) %>% 
+  select(c(1,5,2,3,4))
+
+merge1 <- full_join(case_truth,case_1_week_prediction)
+merge2 <- full_join(merge1,case_2_week_prediction)
+merge3 <- full_join(merge2,case_3_week_prediction)
+merge4 <- full_join(merge3,case_4_week_prediction)
+
+case_truth_and_predictions <- merge4
+
+national_case_truth_and_predictions <- case_truth_and_predictions %>% 
+  subset(select=c(2:5)) %>% 
+  group_by(type,date,source_date) %>% 
+  summarise_at(vars(value), list(sum))
+
+remove(case_truth,case_1_week_prediction,case_2_week_prediction,
+       case_3_week_prediction,case_4_week_prediction,merge1,merge2,
+       merge3,merge4)
+```
+
+```{r}
+
+case_truth_baseline <- combined_baseline[c(1,3,5)] %>% 
+  mutate(type = "incidence cases") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  mutate(source_date = date) %>% 
+  select(c(1,4,2,3,5))
+case_1_week_prediction_baseline <- combined_baseline[c(1,25,9,3)] %>% 
+  mutate(type = "1 week ahead prediction") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  rename(source_date = 4) %>% 
+  select(c(1,5,2,3,4))
+case_2_week_prediction_baseline <- combined_baseline[c(1,24,8,3)] %>% 
+  mutate(type = "2 week ahead prediction") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  rename(source_date = 4) %>% 
+  select(c(1,5,2,3,4))
+case_3_week_prediction_baseline <- combined_baseline[c(1,23,7,3)] %>% 
+  mutate(type = "3 week ahead prediction") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  rename(source_date = 4) %>% 
+  select(c(1,5,2,3,4))
+case_4_week_prediction_baseline <- combined_baseline[c(1,22,6,3)] %>% 
+  mutate(type = "4 week ahead prediction") %>% 
+  rename(date = 2) %>% 
+  rename(value = 3) %>% 
+  rename(source_date = 4) %>% 
+  select(c(1,5,2,3,4))
+
+merge1 <- full_join(case_truth_baseline,case_1_week_prediction_baseline)
+merge2 <- full_join(merge1,case_2_week_prediction_baseline)
+merge3 <- full_join(merge2,case_3_week_prediction_baseline)
+merge4 <- full_join(merge3,case_4_week_prediction_baseline)
+
+case_truth_and_predictions_baseline <- merge4
+
+national_case_truth_and_predictions_baseline <- case_truth_and_predictions_baseline %>% 
+  subset(select=c(2:5)) %>% 
+  group_by(type,date,source_date) %>% 
+  summarise_at(vars(value), list(sum))
+
+remove(case_truth_baseline,case_1_week_prediction_baseline,case_2_week_prediction_baseline,
+       case_3_week_prediction_baseline,case_4_week_prediction_baseline,merge1,merge2,
+       merge3,merge4)
+```
+
+```{r}
+all_the_data_by_week <- full_join(combined %>% rename(FIPS_CODE=1),
+                                  all_the_data[,1:10])
+
+all_the_data_by_week_baseline <- full_join(combined_baseline %>% rename(FIPS_CODE=1),
+                                  all_the_data_baseline[,1:10])
+```
+
+```{r}
+all_the_data_relative <- all_the_data[1:10]
+all_the_data_relative$`1 week MAE` <- all_the_data$`1 week ahead absolute error mean`
+all_the_data_relative$`2 week MAE` <- all_the_data$`2 week ahead absolute error mean`
+all_the_data_relative$`3 week MAE` <- all_the_data$`3 week ahead absolute error mean`
+all_the_data_relative$`4 week MAE` <- all_the_data$`4 week ahead absolute error mean`
+all_the_data_relative$`1 week MAE base` <- all_the_data_baseline$`1 week ahead absolute error mean`
+all_the_data_relative$`2 week MAE base` <- all_the_data_baseline$`2 week ahead absolute error mean`
+all_the_data_relative$`3 week MAE base` <- all_the_data_baseline$`3 week ahead absolute error mean`
+all_the_data_relative$`4 week MAE base` <- all_the_data_baseline$`4 week ahead absolute error mean`
+all_the_data_relative$`1 week RMAE` <- 
+  all_the_data_relative$`1 week MAE`/all_the_data_relative$`1 week MAE base`
+all_the_data_relative$`2 week RMAE` <- 
+  all_the_data_relative$`2 week MAE`/all_the_data_relative$`2 week MAE base`
+all_the_data_relative$`3 week RMAE` <- 
+  all_the_data_relative$`3 week MAE`/all_the_data_relative$`3 week MAE base`
+all_the_data_relative$`4 week RMAE` <- 
+  all_the_data_relative$`4 week MAE`/all_the_data_relative$`4 week MAE base`
+
+```
+
+```{r}
+# relative by week
+all_the_data_by_week_relative <- all_the_data_by_week_baseline %>% 
+  rename("1 week ahead absolute error base" = "1 week ahead absolute error") %>% 
+  rename("2 week ahead absolute error base" = "2 week ahead absolute error") %>% 
+  rename("3 week ahead absolute error base" = "3 week ahead absolute error") %>% 
+  rename("4 week ahead absolute error base" = "4 week ahead absolute error") %>% 
+  select(c(1:5,21:18,25:22,26:34)) %>% 
+  right_join(all_the_data_by_week[c(1:5,21:18)]) %>% 
+  select(c(1:5,23:26,6:9,10:13,14:22))
+
+```
+
+
+
+```{r}
+write.csv(all_the_data, file = 
+            "data-output//all_the_data.csv",
+          row.names = TRUE)
+
+write.csv(all_the_data_by_week, file = 
+            "data-output//all_the_data_by_week.csv",
+          row.names = TRUE)
+
+write.csv(case_truth_and_predictions, file = 
+            "data-output//case_truth_and_predictions.csv",
+          row.names = TRUE)
+
+write.csv(national_case_truth_and_predictions, file = 
+            "data-output//national_case_truth_and_predictions.csv",
+          row.names = TRUE)
+
+
+
+```
+
+
+```{r}
+write.csv(all_the_data_baseline, file = 
+            "data-output//all_the_data_baseline.csv",
+          row.names = TRUE)
+
+write.csv(all_the_data_by_week_baseline, file = 
+            "data-output//all_the_data_by_week_baseline.csv",
+          row.names = TRUE)
+
+write.csv(case_truth_and_predictions_baseline, file = 
+            "data-output//case_truth_and_predictions_baseline.csv",
+          row.names = TRUE)
+
+write.csv(national_case_truth_and_predictions_baseline, file = 
+            "data-output//national_case_truth_and_predictions_baseline.csv",
+          row.names = TRUE)
+
+
+
+```
+
+```{r}
+write.csv(all_the_data_relative, file = 
+            "data-output//all_the_data_relative.csv",
+          row.names = TRUE)
+write.csv(all_the_data_by_week_relative, file = 
+            "data-output//all_the_data_by_week_relative.csv",
+          row.names = TRUE)
+```
+
+```{r}
+fips1 = "10001"
+fips2 = "24033"
+dates_to_use <- c("2020-08-03","2020-10-05","2020-12-07","2021-02-01")
+
+plot_data_forecasts <- suppressMessages(covidHubUtils::load_forecasts_zoltar(
+  models = c("COVIDhub-ensemble","COVIDhub-baseline"),
+  types = c("point"),
+  forecast_dates =  dates_to_use,
+  targets = paste(1:4, "wk ahead inc case")))
+
+write.csv(plot_data_forecasts, file = 
+            "data-output//plot_data_forecasts.csv",
+          row.names = TRUE)
+```
+
