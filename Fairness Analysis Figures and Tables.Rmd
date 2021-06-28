@@ -17,7 +17,7 @@ library(cowplot)
 library(png)
 library(covidHubUtils)
 library(zoltr)
-#library(covidcast)
+library(covidcast)
 library("scales")
 
 last_day_of_week_end_date <- "2021-03-06"
@@ -106,7 +106,7 @@ all_the_data_relative_pull_cutoff <- left_join(all_the_data_relative_pull_cutoff
 ```
 
 ## Data Editing 
-```{r}
+```{r include=FALSE}
 ## number of counties with 0 reported cummulative cases
 ## 22 Utah 2 Alaska 1 Hawaii
 nrow(all_the_data_pull_cutoff %>% filter(`total cases`==0))
@@ -118,7 +118,7 @@ all_the_data_relative_pull_cutoff <- all_the_data_relative_pull_cutoff %>%
   filter(`total cases`!=0)
 ```
 ## Important Values
-```{r}
+```{r include=FALSE}
 all_the_data_pull_cutoff <- all_the_data_pull_cutoff %>% 
   mutate("Case Quartile" = cut_number(`total cases`,n=4,labels=FALSE) )
 
@@ -135,7 +135,7 @@ round(mean(dat$`1 week ahead MAE`),2)
 remove(dat)
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 table_dat <- all_the_data_pull_cutoff %>% 
   mutate("Black Prop. Quartile" = cut_number(Total_Black/Total_Pop,n=4,labels=FALSE) ) %>% 
   select(c(`1 week ahead MAE`,`Case Quartile`,`Black Prop. Quartile`))
@@ -155,7 +155,7 @@ for (i in 1:4) {
 table_by_2_dif_quart
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 table_dat_rmae <- all_the_data_relative_pull_cutoff %>% 
   mutate("Black Prop. Quartile" = cut_number(Total_Black/Total_Pop,n=4,labels=FALSE) ) %>% 
 mutate("Case Quartile" = cut_number(`total cases`,n=4,labels=FALSE)) %>% 
