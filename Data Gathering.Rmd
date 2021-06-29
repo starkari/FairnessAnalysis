@@ -421,8 +421,9 @@ remove(errors_and_cases_baseline)
 
 
 ```{r eval=FALSE, include=FALSE}
-all_the_data$"black proportion categories" <-
-  cut(all_the_data$Total_Black/all_the_data$Total_Pop,seq(0,1,0.1))
+all_the_data$"black proportion quartile" <-
+  cut_number(all_the_data$Total_Black/all_the_data$Total_Pop,
+             n=4, labels=FALSE)
 
 all_the_data$`Covid Case Quartile` = cut_number(all_the_data$`total cases`,
                                                   n=4, labels=FALSE)
