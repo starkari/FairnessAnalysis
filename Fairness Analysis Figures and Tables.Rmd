@@ -141,7 +141,7 @@ remove(dat)
 
 
 #Wilcoxon rank sum between proportion of black constituent quartiles
-```{r}
+```{r echo=FALSE}
 all_the_data_pull_cutoff <- all_the_data_pull_cutoff %>% 
   mutate(black_prop_quart=
            cut_number(all_the_data_pull_cutoff$Total_Black/all_the_data_pull_cutoff$Total_Pop,
@@ -175,7 +175,7 @@ wilcox.test(x=quart_3_mae,y=quart_4_mae)
 ```
 
 # Within Covid Case Quartile 1 Compare Across Race Quartiles
-```{r}
+```{r echo=FALSE}
 
 case_quart_1_race_quart_1 <- all_the_data_pull_cutoff %>% 
               filter(`Case Quartile` == 1) %>% 
@@ -209,7 +209,7 @@ hist(case_quart_1_race_quart_2,breaks = 50)
 
 
 Within Covid Case Quartile 2 Compare Across Race Quartiles
-```{r}
+```{r echo=FALSE}
 case_quart_2_race_quart_1 <- all_the_data_pull_cutoff %>% 
               filter(`Case Quartile` == 2) %>% 
               filter(black_prop_quart == 1) %>% 
@@ -238,7 +238,7 @@ wilcox.test(x=case_quart_2_race_quart_1,y=case_quart_2_race_quart_4)
 ```
 
 Within Covid Case Quartile 3 Compare Across Race Quartiles
-```{r}
+```{r echo=FALSE}
 case_quart_3_race_quart_1 <- all_the_data_pull_cutoff %>% 
               filter(`Case Quartile` == 3) %>% 
               filter(black_prop_quart == 1) %>% 
@@ -267,7 +267,7 @@ wilcox.test(x=case_quart_3_race_quart_1,y=case_quart_3_race_quart_4)
 ```
 
 Within Covid Case Quartile 4 Compare Across Race Quartiles
-```{r}
+```{r echo=FALSE}
 case_quart_4_race_quart_1 <- all_the_data_pull_cutoff %>% 
               filter(`Case Quartile` == 4) %>% 
               filter(black_prop_quart == 1) %>% 
@@ -297,7 +297,7 @@ wilcox.test(x=case_quart_4_race_quart_1,y=case_quart_4_race_quart_4)
 
 ## All 16 quartile quartile breakdowns for RMAE comparison
 
-```{r}
+```{r echo=FALSE}
 
 table_dat_rmae <- all_the_data_relative_pull_cutoff %>% 
   mutate("Black Prop. Quartile" =
@@ -342,7 +342,7 @@ final_16_16 <- data.frame(rmae_quartile_quartile_comparison)
 
 
 ## Summary Statistics Case Quartile
-```{r}
+```{r echo=FALSE}
 case_quart_1_summary <- all_the_data_pull_cutoff %>%
   filter(`Case Quartile` == 1) %>% 
   pull(`1 week ahead MAE`)
@@ -356,7 +356,7 @@ case_quart_4_summary <- all_the_data_pull_cutoff %>%
 
 
 ## Summary Statistics By Race Quartile
-```{r}
+```{r echo=FALSE}
 race_quart_1_summary <- all_the_data_pull_cutoff %>%
   filter(black_prop_quart == 1) %>% 
   pull(`1 week ahead MAE`) %>% 
@@ -411,7 +411,7 @@ for (i in 1:4) {
   
 }
 
-table_by_2_dif_quart [5,5] <- 
+table_by_2_count [5,5] <- 
   round(length(table_dat$`1 week ahead MAE`),3)
 
 table_by_2_count
@@ -706,7 +706,7 @@ plot_grid(plots, legend, ncol = 1, rel_heights = c(1, .1))
 
 or 
 
-```{r}
+```{r echo=FALSE}
 all_the_data_relative_pull_cutoff %>% 
   ggplot(mapping = aes(x=`total cases`,
                        y=`1 week ahead MAE base`)) +
