@@ -136,11 +136,38 @@ dat <- all_the_data_pull_cutoff %>%
   filter(`Case Quartile`==4)
 round(mean(dat$`1 week ahead MAE`),2)
 
-remove(dat)
+
 ```
 
+```{r}
+#race
+cor(x=all_the_data_pull_cutoff$`total cases`,
+    y=all_the_data_pull_cutoff$Total_Black/
+      all_the_data_pull_cutoff$Total_Pop,
+    method="spearman")
+cor.test(x=all_the_data_pull_cutoff$`total cases`,
+    y=all_the_data_pull_cutoff$Total_Black/
+      all_the_data_pull_cutoff$Total_Pop,
+    method="spearman")
+```
+```{r}
+#poverty
+x_case <- all_the_data_pull_cutoff$`total cases`
+y_pov <- all_the_data_pull_cutoff$Total_Households_Below_Poverty/
+      (all_the_data_pull_cutoff$Total_Households_Above_Poverty+
+         all_the_data_pull_cutoff$Total_Households_Below_Poverty)
 
-#Wilcoxon rank sum between proportion of black constituent quartiles
+cor(x=x_case[-c(1814)],
+    y=y_pov[-c(1814)],
+    method="spearman")
+cor.test(x=x_case[-c(1814)],
+    y=y_pov[-c(1814)],
+    method="spearman")
+```
+
+# MAE Wilcoxon Tests
+
+## Wilcoxon rank sum between proportion of black constituent quartiles
 ```{r echo=FALSE}
 all_the_data_pull_cutoff <- all_the_data_pull_cutoff %>% 
   mutate(black_prop_quart=
@@ -174,7 +201,7 @@ wilcox.test(x=quart_3_mae,y=quart_4_mae)
 
 ```
 
-# Within Covid Case Quartile 1 Compare Across Race Quartiles
+## Within Covid Case Quartile 1 Compare Across Race Quartiles
 ```{r echo=FALSE}
 
 case_quart_1_race_quart_1 <- all_the_data_pull_cutoff %>% 
@@ -203,12 +230,12 @@ wilcox.test(x=case_quart_1_race_quart_1,y=case_quart_1_race_quart_3)
 #race quartile 1 and 4
 wilcox.test(x=case_quart_1_race_quart_1,y=case_quart_1_race_quart_4)
 
-hist(case_quart_1_race_quart_1,breaks = 50)
-hist(case_quart_1_race_quart_2,breaks = 50)
+# hist(case_quart_1_race_quart_1,breaks = 50)
+# hist(case_quart_1_race_quart_2,breaks = 50)
 ```
 
 
-Within Covid Case Quartile 2 Compare Across Race Quartiles
+## Within Covid Case Quartile 2 Compare Across Race Quartiles
 ```{r echo=FALSE}
 case_quart_2_race_quart_1 <- all_the_data_pull_cutoff %>% 
               filter(`Case Quartile` == 2) %>% 
@@ -237,7 +264,7 @@ wilcox.test(x=case_quart_2_race_quart_1,y=case_quart_2_race_quart_3)
 wilcox.test(x=case_quart_2_race_quart_1,y=case_quart_2_race_quart_4)
 ```
 
-Within Covid Case Quartile 3 Compare Across Race Quartiles
+## Within Covid Case Quartile 3 Compare Across Race Quartiles
 ```{r echo=FALSE}
 case_quart_3_race_quart_1 <- all_the_data_pull_cutoff %>% 
               filter(`Case Quartile` == 3) %>% 
@@ -266,7 +293,7 @@ wilcox.test(x=case_quart_3_race_quart_1,y=case_quart_3_race_quart_3)
 wilcox.test(x=case_quart_3_race_quart_1,y=case_quart_3_race_quart_4)
 ```
 
-Within Covid Case Quartile 4 Compare Across Race Quartiles
+## Within Covid Case Quartile 4 Compare Across Race Quartiles
 ```{r echo=FALSE}
 case_quart_4_race_quart_1 <- all_the_data_pull_cutoff %>% 
               filter(`Case Quartile` == 4) %>% 
@@ -295,10 +322,174 @@ wilcox.test(x=case_quart_4_race_quart_1,y=case_quart_4_race_quart_3)
 wilcox.test(x=case_quart_4_race_quart_1,y=case_quart_4_race_quart_4)
 ```
 
-## All 16 quartile quartile breakdowns for RMAE comparison
 
+
+
+# RMAE Wilcoxon Tests
+
+## Wilcoxon rank sum between proportion of black constituent quartiles
+```{r echo=FALSE}
+all_the_data_relative_pull_cutoff <- all_the_data_relative_pull_cutoff %>% 
+  mutate(black_prop_quart=
+           cut_number(all_the_data_relative_pull_cutoff$Total_Black/all_the_data_relative_pull_cutoff$Total_Pop,
+             n=4, labels=FALSE)) %>% 
+  mutate("Case Quartile" = cut_number(`total cases`,n=4,labels=FALSE) )
+
+quart_1_rmae <- all_the_data_relative_pull_cutoff %>% 
+  filter(black_prop_quart==1) %>% 
+  pull(`1 week RMAE`)
+quart_2_rmae <- all_the_data_relative_pull_cutoff %>% 
+  filter(black_prop_quart==2) %>% 
+  pull(`1 week RMAE`)
+quart_3_rmae <- all_the_data_relative_pull_cutoff %>% 
+  filter(black_prop_quart==3) %>% 
+  pull(`1 week RMAE`)
+quart_4_rmae <- all_the_data_relative_pull_cutoff %>% 
+  filter(black_prop_quart==4) %>% 
+  pull(`1 week RMAE`)
+
+# quart 1 and 2
+wilcox.test(x=quart_1_rmae,y=quart_2_rmae)
+
+#quart 1 and 3
+wilcox.test(x=quart_1_rmae,y=quart_3_rmae)
+
+#quart 1 and 4
+wilcox.test(x=quart_1_rmae,y=quart_4_rmae)
+
+#quart 3 and 4
+wilcox.test(x=quart_3_rmae,y=quart_4_rmae)
+
+```
+
+## Within Covid Case Quartile 1 Compare Across Race Quartiles
 ```{r echo=FALSE}
 
+case_quart_1_race_quart_1 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 1) %>% 
+              filter(black_prop_quart == 1) %>% 
+              pull(`1 week RMAE`)
+case_quart_1_race_quart_2 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 1) %>% 
+              filter(black_prop_quart == 2) %>% 
+              pull(`1 week RMAE`)
+case_quart_1_race_quart_3 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 1) %>% 
+              filter(black_prop_quart == 3) %>% 
+              pull(`1 week RMAE`)
+case_quart_1_race_quart_4 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 1) %>% 
+              filter(black_prop_quart == 4) %>% 
+              pull(`1 week RMAE`)
+
+#race quartile 1 and 2
+wilcox.test(x=case_quart_1_race_quart_1,y=case_quart_1_race_quart_2)
+
+#race quartile 1 and 3
+wilcox.test(x=case_quart_1_race_quart_1,y=case_quart_1_race_quart_3)
+
+#race quartile 1 and 4
+wilcox.test(x=case_quart_1_race_quart_1,y=case_quart_1_race_quart_4)
+
+```
+
+
+## Within Covid Case Quartile 2 Compare Across Race Quartiles
+```{r echo=FALSE}
+case_quart_2_race_quart_1 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 2) %>% 
+              filter(black_prop_quart == 1) %>% 
+              pull(`1 week RMAE`)
+case_quart_2_race_quart_2 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 2) %>% 
+              filter(black_prop_quart == 2) %>% 
+              pull(`1 week RMAE`)
+case_quart_2_race_quart_3 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 2) %>% 
+              filter(black_prop_quart == 3) %>% 
+              pull(`1 week RMAE`)
+case_quart_2_race_quart_4 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 2) %>% 
+              filter(black_prop_quart == 4) %>% 
+              pull(`1 week RMAE`)
+
+#race quartile 1 and 2
+wilcox.test(x=case_quart_2_race_quart_1,y=case_quart_2_race_quart_2)
+
+#race quartile 1 and 3
+wilcox.test(x=case_quart_2_race_quart_1,y=case_quart_2_race_quart_3)
+
+#race quartile 1 and 4
+wilcox.test(x=case_quart_2_race_quart_1,y=case_quart_2_race_quart_4)
+```
+
+## Within Covid Case Quartile 3 Compare Across Race Quartiles
+```{r echo=FALSE}
+case_quart_3_race_quart_1 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 3) %>% 
+              filter(black_prop_quart == 1) %>% 
+              pull(`1 week RMAE`)
+case_quart_3_race_quart_2 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 3) %>% 
+              filter(black_prop_quart == 2) %>% 
+              pull(`1 week RMAE`)
+case_quart_3_race_quart_3 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 3) %>% 
+              filter(black_prop_quart == 3) %>% 
+              pull(`1 week RMAE`)
+case_quart_3_race_quart_4 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 3) %>% 
+              filter(black_prop_quart == 4) %>% 
+              pull(`1 week RMAE`)
+
+#race quartile 1 and 2
+wilcox.test(x=case_quart_3_race_quart_1,y=case_quart_3_race_quart_2)
+
+#race quartile 1 and 3
+wilcox.test(x=case_quart_3_race_quart_1,y=case_quart_3_race_quart_3)
+
+#race quartile 1 and 4
+wilcox.test(x=case_quart_3_race_quart_1,y=case_quart_3_race_quart_4)
+```
+
+## Within Covid Case Quartile 4 Compare Across Race Quartiles
+```{r echo=FALSE}
+case_quart_4_race_quart_1 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 4) %>% 
+              filter(black_prop_quart == 1) %>% 
+              pull(`1 week RMAE`)
+case_quart_4_race_quart_2 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 4) %>% 
+              filter(black_prop_quart == 2) %>% 
+              pull(`1 week RMAE`)
+case_quart_4_race_quart_3 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 4) %>% 
+              filter(black_prop_quart == 3) %>% 
+              pull(`1 week RMAE`)
+case_quart_4_race_quart_4 <- all_the_data_relative_pull_cutoff %>% 
+              filter(`Case Quartile` == 4) %>% 
+              filter(black_prop_quart == 4) %>% 
+              pull(`1 week RMAE`)
+
+#race quartile 1 and 2
+wilcox.test(x=case_quart_4_race_quart_1,y=case_quart_4_race_quart_2)
+
+#race quartile 1 and 3
+wilcox.test(x=case_quart_4_race_quart_1,y=case_quart_4_race_quart_3)
+
+#race quartile 1 and 4
+wilcox.test(x=case_quart_4_race_quart_1,y=case_quart_4_race_quart_4)
+```
+
+
+
+
+
+
+
+# All 16 quartile quartile breakdowns for RMAE comparison
+
+```{r echo=FALSE}
 table_dat_rmae <- all_the_data_relative_pull_cutoff %>% 
   mutate("Black Prop. Quartile" =
            cut_number(Total_Black/Total_Pop,
@@ -336,6 +527,41 @@ for(i in 1:16) {
 }
 
 final_16_16 <- data.frame(rmae_quartile_quartile_comparison)
+
+#r is race c is case
+for (r in 1:4) {
+  for (c in 1:4) {
+    rownames(final_16_16)[4*(r-1)+c] <- 
+      paste0("RQ ",r," CQ ", c)
+    colnames(final_16_16)[4*(r-1)+c] <- 
+      paste0("RQ ",r," CQ ", c)
+      
+  }
+}
+
+```
+
+
+```{r echo=FALSE}
+heat <- final_16_16 %>% 
+  mutate("row_name" = rownames(final_16_16)) %>% 
+  select(c(17,1:16)) %>% 
+  pivot_longer(cols = (2:17) ,names_to = "col_name", values_to = "p value") %>% 
+  ggplot(aes(x=row_name, y=col_name))+
+  geom_tile(mapping = aes(fill=`p value`)) +
+  theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1)) +
+  theme(axis.title.x = element_blank()) +
+  theme(axis.title.y = element_blank()) +
+  scale_y_discrete(limits = rev) +
+  #geom_text(aes(label = `p value`)) +
+  geom_text(aes(label = ifelse(`p value`<0.001,"***",
+                               ifelse(`p value`<0.01,"**",
+                                      ifelse(`p value`<0.05,"*",""))))) +
+  scale_fill_gradient(low = "white", high = "red") +
+  labs(title="Quartile by Quartile RMAE Comparison for Race and Case ",
+       caption = "*** p<.001, ** p<.01, * p<.05") 
+heat
+
 ```
 
 
@@ -420,23 +646,27 @@ table_by_2_count
 
 
 
-## Median MAE and RMAE tables
+# Median MAE and RMAE tables
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 table_dat <- all_the_data_pull_cutoff %>% 
   mutate("Black Prop. Quartile" = cut_number(Total_Black/Total_Pop,n=4,labels=FALSE) ) %>% 
-  select(c(`1 week ahead MAE`,`Case Quartile`,`Black Prop. Quartile`))
+  mutate("Black Prop. Quartile Interval" = cut_number(Total_Black/Total_Pop,n=4) ) %>% 
+  mutate("Case Quartile Interval" = 
+           cut_number(`total cases`,n=4) ) %>%
+  select(c(`1 week ahead MAE`,`Case Quartile`,`Black Prop. Quartile`,
+           `Black Prop. Quartile Interval`,`Case Quartile Interval`))
 
-table_by_2_dif_quart <- matrix(nrow = 5, ncol = 5)
+table_by_2_dif_quart <- matrix(nrow = 5, ncol = 6)
 dimnames(table_by_2_dif_quart ) <-
   list("Case Quartile" = c("lowest 25%", "Q2","Q3","highest 25%","Overall"),
-                    "Prop. Black Quartile" = c("lowest 25%", "Q2","Q3","highest 25%","Overall"))
+                    "Prop. Black Quartile" = c("range","lowest 25%", "Q2","Q3","highest 25%","Overall"))
 for (i in 1:4) {
   for (j in 1:4) {
     vals <- table_dat %>% 
       filter(`Black Prop. Quartile`==j) %>% 
       filter(`Case Quartile`==i)
-    table_by_2_dif_quart [i,j] <- round(median(vals$`1 week ahead MAE`),3)
+    table_by_2_dif_quart [i,j+1] <- round(median(vals$`1 week ahead MAE`),3)
   }
 }
 
@@ -444,7 +674,7 @@ for (i in 1:4) {
 for (j in 1:4) {
   vals <- table_dat %>% 
       filter(`Black Prop. Quartile`==j) 
-  table_by_2_dif_quart [5,j] <- round(median(vals$`1 week ahead MAE`),3)
+  table_by_2_dif_quart [5,j+1] <- round(median(vals$`1 week ahead MAE`),3)
   
 }
 
@@ -452,52 +682,61 @@ for (j in 1:4) {
 for (i in 1:4) {
   vals <- table_dat %>% 
        filter(`Case Quartile`==i)
-  table_by_2_dif_quart [i,5] <- round(median(vals$`1 week ahead MAE`),3)
+  table_by_2_dif_quart [i,6] <- round(median(vals$`1 week ahead MAE`),3)
   
 }
 
-table_by_2_dif_quart [5,5] <- 
+#range column
+for (i in 1:4) {
+  table_by_2_dif_quart [i,1] <- 
+    levels(table_dat$`Case Quartile Interval`)[i]
+}
+
+table_by_2_dif_quart[5,1]<-""
+
+table_by_2_dif_quart [5,6] <- 
   round(median(table_dat$`1 week ahead MAE`),3)
 
 table_by_2_dif_quart
 ```
 
-MAE table generated by LaTex
+## MAE table generated by LaTex
 
 
 \begin{table}[h]
 \centering
-\begin{tabular}{c|c|c|c|c|c|}
-\cline{2-6}
-\multicolumn{1}{l|}{} & \multicolumn{5}{c|}{\textbf{Prop. Black Quartile}} \\ \hline
-\multicolumn{1}{|c|}{\textbf{Case Quartile}} & lowest 25\% & Q2 & Q3 & highest 25\% & Overall \\ \hline
-\multicolumn{1}{|c|}{lowest 25\%} & 6.059 & 6.559 & \cellcolor[HTML]{FD6864}7.794 & \cellcolor[HTML]{FD6864}7.632 & 6.647 \\ \hline
-\multicolumn{1}{|c|}{Q2} & 14.103 & \cellcolor[HTML]{FFCCC9}14.882 & \cellcolor[HTML]{FD6864}17.706 & \cellcolor[HTML]{FFCCC9}15.147 & 14.912 \\ \hline
-\multicolumn{1}{|c|}{Q3} & 25.853 & \cellcolor[HTML]{FFCCC9}29.088 & \cellcolor[HTML]{FD6864}29.603 & 28.912 & 28.515 \\ \hline
-\multicolumn{1}{|c|}{highest 25\%} & 79.059 & 73.368 & 91.324 & \cellcolor[HTML]{FFCCC9}111.779 & 93.353 \\ \hline
-\multicolumn{1}{|c|}{Overall} & 10.279 & \cellcolor[HTML]{FD6864}19.588 & \cellcolor[HTML]{FD6864}35.618 & \cellcolor[HTML]{FD6864}29.500 & 20.735 \\ \hline
+\begin{tabular}{cl|c|c|c|c|c|}
+\cline{3-7}
+\multicolumn{1}{l}{} &  & \multicolumn{5}{c|}{\textbf{Prop. Black Quartile}} \\ \hline
+\multicolumn{1}{|c|}{Case Quartile} & Range & lowest 25\% & Q2 & Q3 & highest 25\% & Overall \\ \hline
+\multicolumn{1}{|c|}{lowest 25\%} & {[}2, 1.09e3{]} & 6.059 & 6.559 & \cellcolor[HTML]{FD6864}7.794 & \cellcolor[HTML]{FD6864}7.632 & 6.647 \\ \hline
+\multicolumn{1}{|c|}{Q2} & (1.09e3, 2.64e3{]} & 14.103 & \cellcolor[HTML]{FFCCC9}14.882 & \cellcolor[HTML]{FD6864}17.706 & \cellcolor[HTML]{FFCCC9}15.147 & 14.912 \\ \hline
+\multicolumn{1}{|c|}{Q3} & (2.64e3, 6.82e3{]} & 25.853 & \cellcolor[HTML]{FFCCC9}29.088 & \cellcolor[HTML]{FD6864}29.603 & 28.912 & 28.515 \\ \hline
+\multicolumn{1}{|c|}{highest 25\%} & (6.82e3, 1.25e6{]} & 79.059 & 73.368 & 91.324 & \cellcolor[HTML]{FFCCC9}111.779 & 93.353 \\ \hline
+\multicolumn{1}{|c|}{Overall} &  & 10.279 & \cellcolor[HTML]{FD6864}19.588 & \cellcolor[HTML]{FD6864}35.618 & \cellcolor[HTML]{FD6864}29.5 & 20.735 \\ \hline
 \end{tabular}
 \caption{Pink for statistically significant at $\alpha=0.05$ and red for statistically significant at $\alpha=0.00333$ (from the Bonferroni Correction over 15 tests) when comparing to Quartile 1 of Prop. Black. across the case quartiles and overall}
-\label{tab:table2a}
+\label{tab:table2}
 \end{table}
 
-
+## RMAE Table code
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 table_dat_rmae <- all_the_data_relative_pull_cutoff %>% 
   mutate("Black Prop. Quartile" = cut_number(Total_Black/Total_Pop,n=4,labels=FALSE) ) %>% 
+  mutate("Black Prop. Quartile Interval" = cut_number(Total_Black/Total_Pop,n=4) ) %>% 
 mutate("Case Quartile" = cut_number(`total cases`,n=4,labels=FALSE)) %>% 
   select(c(`1 week RMAE`,`Case Quartile`,`Black Prop. Quartile`)) 
 
-table_by_2_dif_quart_rmae <- matrix(nrow = 5, ncol = 5)
+table_by_2_dif_quart_rmae <- matrix(nrow = 5, ncol = 6)
 dimnames(table_by_2_dif_quart_rmae ) <-
   list("Case Quartile" = c("lowest 25%", "Q2","Q3","highest 25%","Overall"),
-                    "Prop. Black Quartile" = c("lowest 25%", "Q2","Q3","highest 25%","Overall"))
+                    "Prop. Black Quartile" = c("range","lowest 25%", "Q2","Q3","highest 25%","Overall"))
 for (i in 1:4) {
   for (j in 1:4) {
     vals <- table_dat_rmae %>% 
       filter(`Black Prop. Quartile`==j) %>% 
       filter(`Case Quartile`==i)
-    table_by_2_dif_quart_rmae [i,j] <- 
+    table_by_2_dif_quart_rmae [i,j+1] <- 
       round(median(vals$`1 week RMAE`),3)
   }
 }
@@ -506,7 +745,7 @@ for (i in 1:4) {
 for (j in 1:4) {
   vals <- table_dat_rmae %>% 
       filter(`Black Prop. Quartile`==j) 
-  table_by_2_dif_quart_rmae [5,j] <-
+  table_by_2_dif_quart_rmae [5,j+1] <-
     round(median(vals$`1 week RMAE`),3)
   
 }
@@ -515,33 +754,42 @@ for (j in 1:4) {
 for (i in 1:4) {
   vals <- table_dat_rmae %>% 
        filter(`Case Quartile`==i)
-  table_by_2_dif_quart_rmae [i,5] <- 
+  table_by_2_dif_quart_rmae [i,6] <- 
     round(median(vals$`1 week RMAE`),3)
   
 }
 
-table_by_2_dif_quart_rmae [5,5] <- 
-  round(median(table_dat_rmae$`1 week RMAE`),3)
+#range column
+for (i in 1:4) {
+  table_by_2_dif_quart_rmae [i,1] <- 
+    levels(table_dat$`Case Quartile Interval`)[i]
+}
+
+table_by_2_dif_quart_rmae[5,1]<-""
+
+table_by_2_dif_quart_rmae [5,6] <- 
+  round(median(table_dat$`1 week ahead MAE`),3)
+
 
 table_by_2_dif_quart_rmae
 ```
 
-RMAE Table from LaTex
+## RMAE Table from LaTex
 
 \begin{table}[h]
 \centering
-\begin{tabular}{c|c|c|c|c|c|}
-\cline{2-6}
-\multicolumn{1}{l|}{} & \multicolumn{5}{c|}{\textbf{Prop. Black Quartile}} \\ \hline
-\multicolumn{1}{|c|}{\textbf{Case Quartile}} & lowest 25\% & Q2 & Q3 & highest 25\% & Overall \\ \hline
-\multicolumn{1}{|c|}{lowest 25\%} & 0.898 & 0.901 & 0.910 & 0.885 & 0.898 \\ \hline
-\multicolumn{1}{|c|}{Q2} & 0.906 & 0.887 & 0.902 & 0.887 & 0.897 \\ \hline
-\multicolumn{1}{|c|}{Q3} & 0.911 & 0.899 & 0.905 & 0.879 & 0.898 \\ \hline
-\multicolumn{1}{|c|}{highest 25\%} & 0.923 & 0.890 & 0.889 & 0.894 & 0.891 \\ \hline
-\multicolumn{1}{|c|}{Overall} & 0.903 & 0.896 & 0.897 & 0.887 & 0.896 \\ \hline
+\begin{tabular}{cl|c|c|c|c|c|}
+\cline{3-7}
+\multicolumn{1}{l}{} &  & \multicolumn{5}{c|}{Prop. Black Quartile} \\ \hline
+\multicolumn{1}{|c|}{Case Quartile} & Range & lowest 25\% & Q2 & Q3 & highest 25\% & Overall \\ \hline
+\multicolumn{1}{|c|}{lowest 25\%} & {[}2, 1.09e3{]} & 0.898 & 0.901 & 0.910 & 0.885 & 0.898 \\ \hline
+\multicolumn{1}{|c|}{Q2} & (1.09e3, 2.64e3{]} & 0.906 & 0.887 & 0.902 & \cellcolor[HTML]{FFCCC9}0.887 & 0.897 \\ \hline
+\multicolumn{1}{|c|}{Q3} & (2.64e3, 6.82e3{]} & 0.911 & 0.899 & 0.905 & \cellcolor[HTML]{FD6864}0.879 & 0.898 \\ \hline
+\multicolumn{1}{|c|}{highest 25\%} & (6.82e3, 1.25e6{]} & 0.923 & 0.890 & 0.889 & 0.894 & 0.891 \\ \hline
+\multicolumn{1}{|c|}{Overall} &  & 0.903 & 0.896 & 0.897 & \cellcolor[HTML]{FD6864}0.887 & 0.896 \\ \hline
 \end{tabular}
-\caption{text}
-\label{tab:my-table}
+\caption{Pink for statistically significant at $\alpha=0.05$ and red for statistically significant at $\alpha=0.00333$ (from the Bonferroni Correction over 15 tests) when comparing to Quartile 1 of Prop. Black. across the case quartiles and overall}
+\label{tab:table3}
 \end{table}
 
 
@@ -1318,12 +1566,78 @@ kableTable <- kable(dataTable, format = "simple", align = 'l')
 kableTable
 
 ```
+
+```{r echo=FALSE}
+dataMatrix <- matrix(c(round(summary(lm(One_Week_MAE~Prop_Black*Prop_Pov, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(One_Week_MAE~Tot_Pop, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(One_Week_MAE~Tot_Cases, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(One_Week_MAE~Tot_Cases+
+                                          Prop_Black*Prop_Pov, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(Four_Week_MAE~Prop_Black*Prop_Pov, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Pop, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Cases, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Cases+
+                                          Prop_Black*Prop_Pov, 
+                                  data = regressionData))$r.squared,4),
+                       #col 2
+                       round(summary(lm(One_Week_MAE~Prop_Black*Prop_Pov, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(One_Week_MAE~Tot_Pop, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(One_Week_MAE~Tot_Cases, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(One_Week_MAE~Tot_Cases+
+                                          Prop_Black*Prop_Pov, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(Four_Week_MAE~Prop_Black*Prop_Pov, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Pop, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Cases, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Cases+
+                                          Prop_Black*Prop_Pov, 
+                                  data = regressionData))$adj,4)
+                       ),ncol=2)
+colnames(dataMatrix) <- c("R Squared","Adj. R Squared")
+rownames(dataMatrix) <- c("1 wk Ahead MAE as a funct. of Prop. Black and Prop. Pov", 
+                          "1 wk Ahead MAE as a funct. of Total Population",
+                          "1 wk Ahead MAE as a funct. of Total Cases",
+                          "1 wk Ahead MAE as a funct. of Cases and Minority Prop.",
+                          "4 wk Ahead MAE as a funct. of Prop. Black and Prop. Pov",
+                          "4 wk Ahead MAE as a funct. of Total Population",
+                          "4 wk Ahead MAE as a funct. of Total Cases",
+                          "4 wk Ahead MAE as a funct. of Cases and Minority Prop.")
+
+dataTable <- as.table(dataMatrix)
+kableTable <- kable(dataTable, format = "simple", align = 'l') 
+kableTable
+```
+
+
+
+
+
+
+
+
 ## Regression Equations
 ```{r}
 summary(lm(One_Week_MAE~Tot_Cases,data = regressionData))
 ```
 
 
+```{r}
+summary(lm(One_Week_MAE~Tot_Cases+Prop_Black*Prop_Pov,
+           data = regressionData))
+```
 
 
 
