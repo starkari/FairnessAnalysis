@@ -1,0 +1,28 @@
+---
+title: "Assessing socio-demographic biases and fairness of population-level COVID-19 forecasts in the US"
+author: "Ariane Stark^1, Dasuni Jayawardena^1, Nicholas G Reich^1, ^1 Department of Biostatistics and Epidemiology, University of Massachusetts-Amherst"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Abstract
+
+Increasingly, policy-makers turn to data-driven computational models to inform their real-time understanding and decision-making regarding how to best serve populations at-risk for particular diseases. Forecasting models that attempt to predict future aggregate observations from public health surveillance systems have been used frequently in recent years to help anticipate health-care system burden in outbreaks of influenza, dengue fever, Ebola, chikungunya, Zika, and COVID-19. It is important to assess the “fairness” of such models by measuring whether the accuracy of these models varies by the socio-demographic makeup of different geographic regions. These efforts are critical to better understanding if, how, and to what extent disparities present in healthcare systems may translate to inaccuracy in model outputs. We evaluated the fairness of the COVID-19 Forecast Hub ensemble model predictions of weekly county-level incident cases from July 20, 2020, to March 6, 2021, using demographic data from the United States Census Bureau. Fairness was assessed by investigating whether average model error at the county level was associated with socio-demographic variables. There are observed associations between the proportion of underserved populations in a county and the ensemble forecast’s mean absolute error (MAE). The association appears to be primarily driven by the overall number of cases the county experienced: more cases led to higher model error. Additionally, when using the scale-free metric of relative mean absolute error (RMAE) to evaluate model fairness, the initially observed relationships between predictive model error and demographic variables are no longer present. Health outcome disparities in the COVID-19 pandemic are a critical public health issue and these disparities are mirrored in overall forecast model error. However, using an objective relative model error metric we do not find evidence to suggest that ensemble forecasts performed have lower relative accuracy in counties with higher proportions of historically underserved populations.  
+
+## Introduction
+
+Healthcare systems and public health surveillance networks often have biases that prevent them from being able to effectively reach certain segments of the population. Data that come out of surveillance systems may not be representative of the underlying population due to the costs of seeking healthcare treatment, the differences in access to preventative care and clinical treatment, and/or differences in care-seeking behavior due to access or trust in the healthcare system.
+
+Increasingly, policy-makers turn to data-driven computational models to inform their understanding and decision-making regarding how to best serve populations at-risk for particular diseases. Forecasting models, defined here as models that attempt to predict future aggregate observations from a particular surveillance system (e.g. the total number of influenza-related hospitalizations in a future week), have been used frequently in recent years to help anticipate health-care system burden in outbreaks of influenza, dengue fever, Ebola, chikungunya, Zika, and COVID-19.  
+
+Recently, groups have started to assess the “fairness” of such models, measuring whether the accuracy of these models varies by the socio-demographic makeup of different geographic regions.(1,2) These efforts are critical to better understanding if, how, and to what extent biases present in the surveillance system may carry over to modeling efforts carried out with these data.
+
+As it is important to distinguish between model fairness and the biases in the underlying data, we define a “fair model” as one that does not add any additional “unfairness” to what exists within the data, i.e. inaccuracy is not compounded. Different groups having different rates of a particular condition is commonly referred to as disparities in a health outcome. A system’s ability to measure accurately the outcomes in different groups may vary, yielding different quality in available data: this could yield biases in the resulting data that measures the health outcome. Finally, a statistical model fit to data, while typically unable to see beyond the assumptions used to build the model, can introduce additional bias if appropriate modeling techniques are not followed to ensure, for example, that the analyzed sample is representative of a larger population.
+
+In population-level models, such as outbreak forecasting models, often the same socio-demographic variables that are being considered as drivers of model (un)fairness are also associated with higher case counts of the predicted outcome. Higher case counts are typically associated with higher model errors on an absolute scale (e.g. mean absolute error or root mean squared error)(1,3) (Figure 1). Therefore, it is important to assess model fairness in a manner that takes into account and adjusts for the scale of the forecasted outcome data
+
+We assess model fairness by comparing model error metrics for different locations to a naïve baseline model that objectively treats every location equally due to its simplicity.
