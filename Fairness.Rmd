@@ -8,7 +8,106 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(tidyverse)
+library(readr)
+library(kableExtra)
+library(cowplot)
+library(png)
+library(covidHubUtils)
+library(zoltr)
+library(covidcast)
+library("scales")
+
+
+all_the_data_by_week_pull_cutoff <- 
+  read_csv("data-output/all_the_data_by_week.csv")%>% 
+  subset(select = -c(1))
+
+all_the_data_by_week_relative_pull_cutoff <- 
+  read_csv("data-output/all_the_data_by_week_relative.csv") %>% 
+  subset(select = -c(1)) 
+
+case_truth_and_predictions_pull_cutoff <-
+  read_csv("data-output/case_truth_and_predictions.csv") %>% 
+  subset(select = -c(1))
+
+national_case_truth_and_predictions_pull_cutoff <-
+  read_csv("data-output/national_case_truth_and_predictions.csv") %>% 
+  subset(select = -c(1)) 
+
+
+case_labeller <- function(variable,value) {
+  return (paste0(as.character(value), " cases"))
+}
+
+```
+
+
+```{r echo=FALSE}
+
+all_the_data_pull_cutoff <- all_the_data_by_week_pull_cutoff %>% 
+  group_by(FIPS_CODE) %>% 
+  summarise_at(vars("4 week ahead absolute error","3 week ahead absolute error",
+                    "2 week ahead absolute error","1 week ahead absolute error"),
+               list("mean" = mean),
+               na.rm = TRUE) %>% 
+  rename("1 week ahead MAE" = 5) %>% 
+  rename("2 week ahead MAE" = 4) %>% 
+  rename("3 week ahead MAE" = 3) %>% 
+  rename("4 week ahead MAE" = 2)
+
+all_the_data_pull_cutoff <- left_join(all_the_data_pull_cutoff, 
+             unique(all_the_data_by_week_pull_cutoff[c(1,26:34)]), by = "FIPS_CODE")
+
+
+all_the_data_relative_pull_cutoff <- all_the_data_by_week_relative_pull_cutoff %>% 
+  group_by(FIPS_CODE) %>% 
+  summarise_at(vars("4 week ahead absolute error","3 week ahead absolute error",
+                    "2 week ahead absolute error","1 week ahead absolute error",
+                    "4 week ahead absolute error base",
+                    "3 week ahead absolute error base",
+                    "2 week ahead absolute error base",
+                    "1 week ahead absolute error base"),
+               list("mean" = mean),
+               na.rm = TRUE) %>% 
+  rename("1 week ahead MAE" = 5) %>% 
+  rename("2 week ahead MAE" = 4) %>% 
+  rename("3 week ahead MAE" = 3) %>% 
+  rename("4 week ahead MAE" = 2) %>% 
+  rename("1 week ahead MAE base" = 9) %>% 
+  rename("2 week ahead MAE base" = 8) %>% 
+  rename("3 week ahead MAE base" = 7) %>% 
+  rename("4 week ahead MAE base" = 6)
+
+all_the_data_relative_pull_cutoff <- left_join(all_the_data_relative_pull_cutoff, 
+             unique(all_the_data_by_week_relative_pull_cutoff[c(1,18:26)]), 
+             by = "FIPS_CODE") %>% 
+  mutate("1 week RMAE" = `1 week ahead MAE`/
+           `1 week ahead MAE base`) %>% 
+  mutate("2 week RMAE" = `2 week ahead MAE`/
+           `2 week ahead MAE base`) %>% 
+  mutate("3 week RMAE" = `3 week ahead MAE`/
+           `3 week ahead MAE base`) %>% 
+  mutate("4 week RMAE" = `4 week ahead MAE`/
+           `4 week ahead MAE base`) %>% 
+  filter(!is.na(Total_Pop))
+
+
+```
+
+
+```{r include=FALSE}
+## number of counties with 0 reported cummulative cases
+## 22 Utah 2 Alaska 1 Hawaii
+nrow(all_the_data_pull_cutoff %>% filter(`total cases`==0))
+
+## remove these counties so RMAE avoids a divide by zero
+all_the_data_pull_cutoff <- all_the_data_pull_cutoff %>% 
+  filter(`total cases`!=0)
+all_the_data_relative_pull_cutoff <- all_the_data_relative_pull_cutoff %>%
+  filter(`total cases`!=0)
 ```
 
 ## Abstract
@@ -29,19 +128,168 @@ In population-level models, such as outbreak forecasting models, often the same 
 
 We assess model fairness by comparing model error metrics for different locations to a naïve baseline model that objectively treats every location equally due to its simplicity.
 
+```{r include=FALSE}
+fips1 = "13121"
+fips2 = "25015"
+county_1 <- "Fulton County, \n Georgia"
+county_2 <- "Hampshire County,  \n Massachusetts"
+dates_to_use <- c("2020-08-03","2020-10-05","2020-12-07","2021-02-01")
+
+plot_data_forecasts <- read_csv("data-output/plot_data_forecasts.csv") %>% 
+  subset(select = -c(1)) %>% 
+  transform("location"=as.character(location))
+
+plot_data_forecasts <- plot_data_forecasts%>% 
+  rename("FIPS_CODE"="location") %>% 
+  filter(FIPS_CODE %in% c(fips1,fips2)) %>% 
+  mutate("last date of week forecast made" = 
+           target_end_date-7*as.numeric(horizon)) %>% 
+  select(FIPS_CODE,1:7,`last date of week forecast made`,10)
+
+plot_data_truth <- all_the_data_by_week_pull_cutoff %>% 
+  filter(FIPS_CODE %in% c(fips1,fips2)) %>% 
+  rename("target_end_date" = 3) %>% 
+  select(c(1:5))
+
+plot_data <- right_join(plot_data_truth,plot_data_forecasts) %>% 
+  mutate("AE" = abs(value - `true num incidence cases`) )
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+im1_fips1 <- plot_data_truth %>% 
+  filter(FIPS_CODE == fips1)%>% 
+  ggplot(mapping = aes(x=target_end_date, 
+                           y=`true num incidence cases`)) +
+  geom_point() +
+  geom_line() +
+  geom_point(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1) %>% 
+              filter(forecast_date == dates_to_use[1]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1) %>% 
+              filter(forecast_date == dates_to_use[2]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1) %>% 
+              filter(forecast_date == dates_to_use[3]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1) %>% 
+              filter(forecast_date == dates_to_use[4]))+
+  xlab("") + 
+  ylab("Cases") +
+  ylim(0,6000) +
+  theme(legend.position = "none") + 
+  labs(title = county_1) 
+
+
+
+im2_fips1 <- plot_data %>% 
+  filter(horizon == 1) %>% 
+  filter(FIPS_CODE == fips1) %>% 
+  ggplot() +
+    geom_point(mapping = aes(x=target_end_date, y= AE,color=model))+
+  xlab("Date") + 
+  ylab("1 Week Ahead Abs. Error") +
+  ylim(0,1300) +
+  theme(legend.position = "none") 
+
+
+im1_fips2 <- plot_data_truth %>% 
+  filter(FIPS_CODE == fips2)%>% 
+  ggplot(mapping = aes(x=target_end_date, 
+                           y=`true num incidence cases`)) +
+  geom_point() +
+  geom_line() +
+  geom_point(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2) %>% 
+              filter(forecast_date == dates_to_use[1]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2) %>% 
+              filter(forecast_date == dates_to_use[2]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2) %>% 
+              filter(forecast_date == dates_to_use[3]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2) %>% 
+              filter(forecast_date == dates_to_use[4]))+
+  xlab("") + 
+  ylab("") +
+  ylim(0,6000) +
+  theme(legend.position = "none")+ 
+  labs(title = county_2) 
+
+
+
+
+im2_fips2 <- plot_data %>% 
+  filter(horizon == 1) %>% 
+  filter(FIPS_CODE == fips2) %>% 
+  ggplot() +
+    geom_point(mapping = aes(x=target_end_date, y= AE,color=model))+
+  xlab("Date") + 
+  ylab("") +
+  ylim(0,1300) + 
+  theme(legend.position = "none") 
+
+plots <- plot_grid(im1_fips1,  im1_fips2, im2_fips1,im2_fips2, 
+          labels = "auto" ,label_size = 10 ,label_x = 0.06,label_y = 1)
+legend <- get_legend(im1_fips1 + 
+                       guides(color = guide_legend(nrow = 1)) +
+                       theme(legend.position = "bottom"))
+plot_grid(plots, legend, ncol = 1, rel_heights = c(1, .1))
+```
+
 ## Methods
 
 ### Prior Work
 
 Prior literature on this topic has assessed model fairness through adjusting for population size (Scarpino et al) and normalizing a measure of the predicted outcome over the window of prediction (Google). Scarpino et al. analyzed socioeconomic bias in influenza surveillance. They compared hospitalizations due to flu by “poverty quartile” by dividing their data by zip code into the quartiles based on the proportion of population living below the federally defined poverty line. To evaluate the models analyzed predictive performance they looked at the Out of Sample Root Mean Squared Error (ORMSE) per county where 
 
-[Latex Equation]
+$$\text{ORMSE}^{(l)}=\frac{\sqrt{\frac{1}{N}\sum_{t=1}^N (\hat{y}_{lt}-y_{lt})^2}}{\text{Pop}^{(l)}}$$
 
 for location $l$ , number of weeks $N$ , and error $\bar{y}_{it} - y_{it}$  where  is prediction and $y_{it}$ truth at time $t$ for location $l$  and $Pop^{(l)}$ is the population of location $l$ . They found that models had the highest ORMSE (i.e. the worst accuracy) for the most impoverished quartile of locations across all of the data sources they used. 
 
 Another white-paper analyzed US county-level forecasts of COVID-19 cases to look at the distribution of their model’s prediction errors. They binned counties into four equally sized groups based on quartiles of a particular socio-demographic variable in a county, e.g. proportion of the county’s residents who were Black, and then analyzed the distribution of the errors within those groups.  The authors used a Normalized Mean Absolute Error (NMAE) across the quartiles where NMAE normalizes the sum of the absolute differences by the cumulative number of deaths in a county over the forecasting horizon:
 
-[LATEX EQUATION]
+$$\text{NMAE}^{(l)}(T,\tau)=\frac{1}{\tau} \frac{\sum_{t=T+1}^{T+\tau}\lvert \hat{y}_{lt}-y_{lt}\rvert}{(y_{l(T+\tau)}-y_{l(T+1)})_1}$$
 
 [Paragraph explaining equation]
 
