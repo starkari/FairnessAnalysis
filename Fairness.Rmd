@@ -8,7 +8,143 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(tidyverse)
+library(readr)
+library(kableExtra)
+library(cowplot)
+library(png)
+library(covidHubUtils)
+library(zoltr)
+library(covidcast)
+library("scales")
+
+
+all_the_data_by_week_pull_cutoff <- 
+  read_csv("data-output/all_the_data_by_week.csv")%>% 
+  subset(select = -c(1))
+
+all_the_data_by_week_relative_pull_cutoff <- 
+  read_csv("data-output/all_the_data_by_week_relative.csv") %>% 
+  subset(select = -c(1)) 
+
+case_truth_and_predictions_pull_cutoff <-
+  read_csv("data-output/case_truth_and_predictions.csv") %>% 
+  subset(select = -c(1))
+
+national_case_truth_and_predictions_pull_cutoff <-
+  read_csv("data-output/national_case_truth_and_predictions.csv") %>% 
+  subset(select = -c(1)) 
+
+
+case_labeller <- function(variable,value) {
+  return (paste0(as.character(value), " cases"))
+}
+
+```
+
+
+```{r echo=FALSE}
+
+all_the_data_pull_cutoff <- all_the_data_by_week_pull_cutoff %>% 
+  group_by(FIPS_CODE) %>% 
+  summarise_at(vars("4 week ahead absolute error","3 week ahead absolute error",
+                    "2 week ahead absolute error","1 week ahead absolute error"),
+               list("mean" = mean),
+               na.rm = TRUE) %>% 
+  rename("1 week ahead MAE" = 5) %>% 
+  rename("2 week ahead MAE" = 4) %>% 
+  rename("3 week ahead MAE" = 3) %>% 
+  rename("4 week ahead MAE" = 2)
+
+all_the_data_pull_cutoff <- left_join(all_the_data_pull_cutoff, 
+             unique(all_the_data_by_week_pull_cutoff[c(1,26:34)]), by = "FIPS_CODE")
+
+
+all_the_data_relative_pull_cutoff <- all_the_data_by_week_relative_pull_cutoff %>% 
+  group_by(FIPS_CODE) %>% 
+  summarise_at(vars("4 week ahead absolute error","3 week ahead absolute error",
+                    "2 week ahead absolute error","1 week ahead absolute error",
+                    "4 week ahead absolute error base",
+                    "3 week ahead absolute error base",
+                    "2 week ahead absolute error base",
+                    "1 week ahead absolute error base"),
+               list("mean" = mean),
+               na.rm = TRUE) %>% 
+  rename("1 week ahead MAE" = 5) %>% 
+  rename("2 week ahead MAE" = 4) %>% 
+  rename("3 week ahead MAE" = 3) %>% 
+  rename("4 week ahead MAE" = 2) %>% 
+  rename("1 week ahead MAE base" = 9) %>% 
+  rename("2 week ahead MAE base" = 8) %>% 
+  rename("3 week ahead MAE base" = 7) %>% 
+  rename("4 week ahead MAE base" = 6)
+
+all_the_data_relative_pull_cutoff <- left_join(all_the_data_relative_pull_cutoff, 
+             unique(all_the_data_by_week_relative_pull_cutoff[c(1,18:26)]), 
+             by = "FIPS_CODE") %>% 
+  mutate("1 week RMAE" = `1 week ahead MAE`/
+           `1 week ahead MAE base`) %>% 
+  mutate("2 week RMAE" = `2 week ahead MAE`/
+           `2 week ahead MAE base`) %>% 
+  mutate("3 week RMAE" = `3 week ahead MAE`/
+           `3 week ahead MAE base`) %>% 
+  mutate("4 week RMAE" = `4 week ahead MAE`/
+           `4 week ahead MAE base`) %>% 
+  filter(!is.na(Total_Pop))
+
+
+```
+
+
+```{r include=FALSE}
+## number of counties with 0 reported cummulative cases
+## 22 Utah 2 Alaska 1 Hawaii
+nrow(all_the_data_pull_cutoff %>% filter(`total cases`==0))
+
+## remove these counties so RMAE avoids a divide by zero
+all_the_data_pull_cutoff <- all_the_data_pull_cutoff %>% 
+  filter(`total cases`!=0)
+all_the_data_relative_pull_cutoff <- all_the_data_relative_pull_cutoff %>%
+  filter(`total cases`!=0)
+```
+```{r include=FALSE}
+all_the_data_pull_cutoff <- all_the_data_pull_cutoff %>% 
+  mutate("Case Quartile" = cut_number(`total cases`,n=4,labels=FALSE) )
+
+## 1 Week MAE Lowest 25%
+dat <- all_the_data_pull_cutoff %>% 
+  filter(`Case Quartile`==1)
+round(mean(dat$`1 week ahead MAE`),2)
+
+## 1 Week MAE Highest 25%
+dat <- all_the_data_pull_cutoff %>% 
+  filter(`Case Quartile`==4)
+round(mean(dat$`1 week ahead MAE`),2)
+
+
+```
+```{r include=FALSE}
+regressionData<-data.frame(all_the_data_pull_cutoff$FIPS_CODE, 
+                           all_the_data_pull_cutoff$Total_Pop,
+                 all_the_data_pull_cutoff$Total_Black/all_the_data_pull_cutoff$Total_Pop,
+                 all_the_data_pull_cutoff$`total cases`,
+                 all_the_data_pull_cutoff$Total_Households_Below_Poverty/
+                   (all_the_data_pull_cutoff$Total_Households_Below_Poverty+
+                      all_the_data_pull_cutoff$Total_Households_Above_Poverty),
+                    (all_the_data_pull_cutoff$`total cases`/
+                       all_the_data_pull_cutoff$Total_Pop)*1,
+                 all_the_data_pull_cutoff$`1 week ahead MAE`,
+                 all_the_data_pull_cutoff$`4 week ahead MAE`
+                 ) %>% 
+  rename("Tot_Pop"=2) %>% 
+  rename("Tot_Cases" = 4) %>% 
+  rename("Prop_Black" = 3) %>% 
+  rename("Prop_Pov" = 5) %>% 
+  rename("Prop_Cases" = 6) %>% 
+  rename("One_Week_MAE" = 7) %>% 
+  rename("Four_Week_MAE" = 8)
 ```
 
 ## Abstract
@@ -29,19 +165,170 @@ In population-level models, such as outbreak forecasting models, often the same 
 
 We assess model fairness by comparing model error metrics for different locations to a naïve baseline model that objectively treats every location equally due to its simplicity.
 
+## Figure 1
+
+```{r include=FALSE}
+fips1 = "13121"
+fips2 = "25015"
+county_1 <- "Fulton County, \n Georgia"
+county_2 <- "Hampshire County,  \n Massachusetts"
+dates_to_use <- c("2020-08-03","2020-10-05","2020-12-07","2021-02-01")
+
+plot_data_forecasts <- read_csv("data-output/plot_data_forecasts.csv") %>% 
+  subset(select = -c(1)) %>% 
+  transform("location"=as.character(location))
+
+plot_data_forecasts <- plot_data_forecasts%>% 
+  rename("FIPS_CODE"="location") %>% 
+  filter(FIPS_CODE %in% c(fips1,fips2)) %>% 
+  mutate("last date of week forecast made" = 
+           target_end_date-7*as.numeric(horizon)) %>% 
+  select(FIPS_CODE,1:7,`last date of week forecast made`,10)
+
+plot_data_truth <- all_the_data_by_week_pull_cutoff %>% 
+  filter(FIPS_CODE %in% c(fips1,fips2)) %>% 
+  rename("target_end_date" = 3) %>% 
+  select(c(1:5))
+
+plot_data <- right_join(plot_data_truth,plot_data_forecasts) %>% 
+  mutate("AE" = abs(value - `true num incidence cases`) )
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+im1_fips1 <- plot_data_truth %>% 
+  filter(FIPS_CODE == fips1)%>% 
+  ggplot(mapping = aes(x=target_end_date, 
+                           y=`true num incidence cases`)) +
+  geom_point() +
+  geom_line() +
+  geom_point(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1) %>% 
+              filter(forecast_date == dates_to_use[1]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1) %>% 
+              filter(forecast_date == dates_to_use[2]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1) %>% 
+              filter(forecast_date == dates_to_use[3]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips1) %>% 
+              filter(forecast_date == dates_to_use[4]))+
+  xlab("") + 
+  ylab("Cases") +
+  ylim(0,6000) +
+  theme(legend.position = "none") + 
+  labs(title = county_1) 
+
+
+
+im2_fips1 <- plot_data %>% 
+  filter(horizon == 1) %>% 
+  filter(FIPS_CODE == fips1) %>% 
+  ggplot() +
+    geom_point(mapping = aes(x=target_end_date, y= AE,color=model))+
+  xlab("Date") + 
+  ylab("1 Week Ahead Abs. Error") +
+  ylim(0,1300) +
+  theme(legend.position = "none") 
+
+
+im1_fips2 <- plot_data_truth %>% 
+  filter(FIPS_CODE == fips2)%>% 
+  ggplot(mapping = aes(x=target_end_date, 
+                           y=`true num incidence cases`)) +
+  geom_point() +
+  geom_line() +
+  geom_point(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2) %>% 
+              filter(forecast_date == dates_to_use[1]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2) %>% 
+              filter(forecast_date == dates_to_use[2]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2) %>% 
+              filter(forecast_date == dates_to_use[3]))+
+  geom_line(mapping = aes(x=target_end_date, 
+                           y=value,
+                           color=model,
+                           group= model,
+                          group = `last date of week forecast made`),
+             data=plot_data_forecasts %>% filter(FIPS_CODE==fips2) %>% 
+              filter(forecast_date == dates_to_use[4]))+
+  xlab("") + 
+  ylab("") +
+  ylim(0,6000) +
+  theme(legend.position = "none")+ 
+  labs(title = county_2) 
+
+
+
+
+im2_fips2 <- plot_data %>% 
+  filter(horizon == 1) %>% 
+  filter(FIPS_CODE == fips2) %>% 
+  ggplot() +
+    geom_point(mapping = aes(x=target_end_date, y= AE,color=model))+
+  xlab("Date") + 
+  ylab("") +
+  ylim(0,1300) + 
+  theme(legend.position = "none") 
+
+plots <- plot_grid(im1_fips1,  im1_fips2, im2_fips1,im2_fips2, 
+          labels = "auto" ,label_size = 10 ,label_x = 0.06,label_y = 1)
+legend <- get_legend(im1_fips1 + 
+                       guides(color = guide_legend(nrow = 1)) +
+                       theme(legend.position = "bottom"))
+plot_grid(plots, legend, ncol = 1, rel_heights = c(1, .1))
+```
+
 ## Methods
 
 ### Prior Work
 
 Prior literature on this topic has assessed model fairness through adjusting for population size (Scarpino et al) and normalizing a measure of the predicted outcome over the window of prediction (Google). Scarpino et al. analyzed socioeconomic bias in influenza surveillance. They compared hospitalizations due to flu by “poverty quartile” by dividing their data by zip code into the quartiles based on the proportion of population living below the federally defined poverty line. To evaluate the models analyzed predictive performance they looked at the Out of Sample Root Mean Squared Error (ORMSE) per county where 
 
-[Latex Equation]
+$$\text{ORMSE}^{(l)}=\frac{\sqrt{\frac{1}{N}\sum_{t=1}^N (\hat{y}_{lt}-y_{lt})^2}}{\text{Pop}^{(l)}}$$
 
 for location $l$ , number of weeks $N$ , and error $\bar{y}_{it} - y_{it}$  where  is prediction and $y_{it}$ truth at time $t$ for location $l$  and $Pop^{(l)}$ is the population of location $l$ . They found that models had the highest ORMSE (i.e. the worst accuracy) for the most impoverished quartile of locations across all of the data sources they used. 
 
 Another white-paper analyzed US county-level forecasts of COVID-19 cases to look at the distribution of their model’s prediction errors. They binned counties into four equally sized groups based on quartiles of a particular socio-demographic variable in a county, e.g. proportion of the county’s residents who were Black, and then analyzed the distribution of the errors within those groups.  The authors used a Normalized Mean Absolute Error (NMAE) across the quartiles where NMAE normalizes the sum of the absolute differences by the cumulative number of deaths in a county over the forecasting horizon:
 
-[LATEX EQUATION]
+$$\text{NMAE}^{(l)}(T,\tau)=\frac{1}{\tau} \frac{\sum_{t=T+1}^{T+\tau}\lvert \hat{y}_{lt}-y_{lt}\rvert}{(y_{l(T+\tau)}-y_{l(T+1)})_1}$$
 
 [Paragraph explaining equation]
 
@@ -55,3 +342,324 @@ COVID-19 case data was retrieved from the Johns Hopkins University Center for Sy
 Population demographic data was taken from the American Community Survey which provides five-year demographic estimates by county from 2015-2019. [CITATION]  We extracted the proportion of the population of each county belonging to a particular demographic group, e.g., White, Black and Hispanic, and the fraction of households above and below the poverty level.
 
 The US COVID-19 Forecast Hub is a central repository for models making short-term weekly forecasts of COVID-19.[CITATION] The forecast data includes one to four week ahead predictions from the COVID-19 Forecast Hub ensemble model of new weekly cases due to COVID-19. The ensemble model produces quantile and point forecasts by taking the median of each prediction quantile for all eligible models for a given location.(4) Our data also include the baseline model which predicts for one to four week ahead incident cases the same value as the week prior.
+
+### Metrics
+
+We define  the mean absolute error (MAE) as 
+
+$$\text{MAE}_{lh}=\frac{1}{N}\sum_{w} \vert \hat{y}_{lwh}-y_{lwh} \vert$$
+
+
+for a specific location $l$ over a horizon $h$ , by averaging over the $N$ weeks ($w$) starting from forecasts made July 20, 2020, to forecasts made March 6, 2021. Higher values of MAE indicate less accuracy of the point forecasts from the model.
+We used regression methods to evaluate associations between the ensemble model’s MAE and other independent variables including county-level incident cases and sociodemographic measurements. We performed one set of linear regressions for 1 week ahead MAE and another for 4 week ahead MAE. Within each set we predicted the MAE 4 times as a function of proportion in poverty and proportion black, total population, total cases, and cases with minority proportions respectively.(table 1) For 1 week ahead MAE as a function of total cases, the output of the linear regression model was: 
+
+$$\text{One Week Ahead MAE} = \beta_0 + \beta_1*\text{Total Cases}$$
+
+We further analyzed the data by looking at the relative mean absolute error (RMAE)  . The RMAE was calculated for a specific location  over a horizon , by calculating the MAE 
+
+$$RMAE_{l\cdot h}=\frac{MAE_{l\cdot h}(E)}{MAE_{l\cdot h}(B)}=\frac{\frac{1}{N}\sum_w \vert \hat{y}^{\text{Ensemble}}_{lwh}-y_{lwh}\vert}{\frac{1}{N}\sum_w \vert \hat{y}^{\text{Baseline}}_{lwh}-y_{lwh}\vert}$$
+at location $l$ and horizon $h$ for the Covid-19 Forecast Hub ensemble model and dividing that value by the MAE at location $l$ and horizon $h$ for the Covid-19 Forecast Hub Baseline Model. The Baseline Model which is a naive model and predicts for horizons one to four weeks out the same number of incident cases as the prior week at location . RMAE is nonnegative with focus being placed as to whether it is above or below one. When the RMAE is below one it means that the ensemble model was a more accurate predictor at location $l$  and horizon $h$ than the baseline model was. Conversely, when the RMAE is above one it means that the ensemble model was a less accurate predictor at location $l$ and horizon $h$ than the baseline model was. 
+
+We used nonparametric Wilcoxon rank-sum tests to assess differences in 1 week ahead median MAE and RMAE between groups of counties. Specifically, we assigned every county to a “case quartile” based on how many total COVID-19 cases the county reported by XX date, and to a “race quartile” based on the proportion of Black constituents in the county. Within each particular case quartile (that is, among counties with similar numbers of total cases) and among all counties overall, we performed 3 Wilcoxon tests. Within each strata, each test compared counties with higher proportions of black constituents to the counties that had the lowest number of black constituents. Since three tests were conducted for each of five groups and two Since three tests were conducted for each of five groups and two methods were used (MAE and RMAE), to adjust for the large number of comparisons, we applied a Bonferroni correction by indicating a significance level of 0.05/30.
+
+## Table 1
+
+```{r echo=FALSE}
+dataMatrix <- matrix(c(round(summary(lm(One_Week_MAE~Prop_Black*Prop_Pov, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(One_Week_MAE~Tot_Pop, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(One_Week_MAE~Tot_Cases, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(One_Week_MAE~Tot_Cases+
+                                          Prop_Black*Prop_Pov, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(Four_Week_MAE~Prop_Black*Prop_Pov, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Pop, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Cases, 
+                                  data = regressionData))$r.squared,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Cases+
+                                          Prop_Black*Prop_Pov, 
+                                  data = regressionData))$r.squared,4),
+                       #col 2
+                       round(summary(lm(One_Week_MAE~Prop_Black*Prop_Pov, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(One_Week_MAE~Tot_Pop, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(One_Week_MAE~Tot_Cases, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(One_Week_MAE~Tot_Cases+
+                                          Prop_Black*Prop_Pov, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(Four_Week_MAE~Prop_Black*Prop_Pov, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Pop, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Cases, 
+                                  data = regressionData))$adj,4),
+                       round(summary(lm(Four_Week_MAE~Tot_Cases+
+                                          Prop_Black*Prop_Pov, 
+                                  data = regressionData))$adj,4)
+                       ),ncol=2)
+colnames(dataMatrix) <- c("R Squared","Adj. R Squared")
+rownames(dataMatrix) <- c("1 wk Ahead MAE as a funct. of Prop. Black and Prop. Pov", 
+                          "1 wk Ahead MAE as a funct. of Total Population",
+                          "1 wk Ahead MAE as a funct. of Total Cases",
+                          "1 wk Ahead MAE as a funct. of Cases and Minority Prop.",
+                          "4 wk Ahead MAE as a funct. of Prop. Black and Prop. Pov",
+                          "4 wk Ahead MAE as a funct. of Total Population",
+                          "4 wk Ahead MAE as a funct. of Total Cases",
+                          "4 wk Ahead MAE as a funct. of Cases and Minority Prop.")
+
+dataTable <- as.table(dataMatrix)
+kableTable <- kable(dataTable, format = "simple", align = 'l') 
+kableTable
+```
+
+
+### Results
+
+### Untangling the relationship between demographics, case counts and model error
+
+The magnitude of the absolute error in the forecasting of 1 week-ahead county-level COVID-19 reported cases is associated with changes in sociodemographic variables such as poverty and race. We looked at aggregate errors across four groups of counties, where counties were grouped into quartiles based on the percentage of the population belonging to specific socio-demographic groups. The model made less accurate predictions for counties with higher proportions of black constituents (Figure 2a, Table 2). The median county-level MAE of the ensemble forecast in the 25% of counties with the lowest percentages of black constituents, was 10.3 (IQR: 5.917- 17.890) compared with a median MAE of 29.5 (IQR: 14.721- 86.246) in the 25% of counties with highest percentages of black constituents.  Each of the 2nd, 3rd, and 4th quartiles had distributions of MAE that were significantly higher than those in the 1st quartile (non-parametric Wilcoxon Rank-Sum p-values all less than 1x10^-15, Table 2). When the relationship between proportion of minority population and accuracy was assessed with the proportion as a continuous variable and not grouped into quartiles, the error increased rapidly and then decreased (Figure 3a). 
+
+However, there was a strong positive association between case counts and demographic variables at the county level. Higher proportions of black constituents were associated with larger cumulative case counts at the county level (Spearman correlation coefficient of 0.43, p-value < 0.0001). Meanwhile, higher proportions of households in poverty showed a small but significant correlation with smaller cumulative case counts at the county level (Spearman correlation coefficient of -0.08, p-value < 0.0001). 
+
+An investigation of the relationship between both total COVID-19 cases and socio-demographic variables with 1 week-ahead ensemble forecast MAE reveals that case counts capture substantially more variation in model accuracy than socio-demographic variables alone. Highlighting the impact of total cases on MAE, within every quartile of counties grouped by the proportion of black constituents, the median county-level MAE monotonically increased as case counts increased (Figure 2b). This is exemplified by the example shown in Figure 1, comparing Fulton County, Georgia to Hampshire County, Massachusetts, where higher case counts led to higher errors. 
+
+When stratifying by the level of cases a county experienced, the proportion of black residents was no longer consistently associated with higher model error. We used the Wilcoxon rank-sum test to evaluate the significance of the differences in errors across the racial demographics within counties with similar levels of cases (Table 2). We observed that some differences in errors were statistically significant even among counties that were in the same quartile of overall case counts. For the case quartiles representing the lowest numbers of cases, the practical significance of the differences in model error was small [add a specific number here?]. The quartile of counties with the highest case counts spanned a range between xxx to yyy cumulative cases per county. Within this quartile of the counties with highest cumulative incidence, an increasing proportion of black residents was associated with increasing case counts, indicating that the quartile stratification approach (as implemented in [add citation number]) may not fully adjust for the confounding between case counts and demographics (Supplemental figure). 
+
+Additionally, a regression analysis on all county-level observations showed that cumulative case counts in a county explained substantially more variation in model error than sociodemographic components. Looking at the regression model for one week ahead MAE as a function of total cases we see that its adjusted R2 value (0.89) is identical to that of a model that also includes socio-demographics (R2=0.89). When adjusting for total cases, county-level socio-demographic variables did not show a statistically significant association with 1 or 4 week-ahead MAE.  
+
+## figure 2
+
+```{r echo=FALSE}
+im1 <- all_the_data_pull_cutoff %>% 
+  ggplot()+
+  geom_boxplot(aes(x=cut_number(Total_Black/Total_Pop,4), 
+      y=`1 week ahead MAE`)) +
+  xlab("") + 
+  ylab("Log Scale 1 \n Week Ahead MAE") +
+  scale_y_log10()
+
+im2 <- all_the_data_pull_cutoff %>% 
+  ggplot()+
+  geom_boxplot(aes(x=cut_number(Total_Black/Total_Pop,4), 
+      y=`1 week ahead MAE`, fill=as.factor(cut_number(`total cases`,n=4)))) +
+  xlab("Proportion of Black Constituents") +
+  ylab("Log Scale 1  \n Week Ahead MAE")+
+  labs(fill="Case Quartile")+
+  scale_y_log10() +
+  theme(legend.position = "none")
+
+plots <- plot_grid(im1,im2, labels = "auto" ,ncol=1, 
+                   label_size = 10 ,label_x = 0.09,label_y = 1)
+legend <- get_legend(im2 + 
+                       guides(color = guide_legend(nrow = 1)) +
+                       theme(legend.position = "bottom"))
+plot_grid(plots, legend, ncol = 1, rel_heights = c(1, .1))
+```
+
+## Figure 3
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+#mae
+
+im1 <- all_the_data_pull_cutoff %>% 
+  ggplot() + 
+  aes(x=Total_Black/Total_Pop, y=`1 week ahead MAE`) +
+  geom_point(aes(color=cut_number(`total cases`,n=4)),
+               alpha=0.25)+
+  geom_smooth(aes(color=cut_number(`total cases`,n=4)),
+                se=FALSE) +
+  geom_smooth(se=FALSE, color="black") + 
+  xlab("") + 
+  ylab("1 Wk. Ahead MAE") +
+  guides(color=guide_legend(title="Case Quartiles")) +
+  #ylim(0,12000) +
+  scale_y_log10(limits = c(NA,1200))+
+  theme(legend.position = "none")
+
+im2 <- all_the_data_pull_cutoff %>% 
+  ggplot() + 
+  aes(x=Total_Black/Total_Pop, y=`4 week ahead MAE`) +
+  geom_point(aes(color=cut_number(`total cases`,n=4)),
+               alpha=0.25)+
+  geom_smooth(aes(color=cut_number(`total cases`,n=4)),
+                se=FALSE) +
+  geom_smooth(se=FALSE, color="black") + 
+  xlab("Prop Black Constituents") + 
+  ylab("4 Wk. Ahead MAE") +
+  guides(color=guide_legend(title="Case Quartiles")) +
+  #ylim(0,12000) +
+  scale_y_log10(limits = c(NA,1200))+
+  theme(legend.position = "none")
+
+
+
+# rmae
+im3 <- all_the_data_relative_pull_cutoff %>% 
+  ggplot() + 
+  aes(x=Total_Black/Total_Pop, y=`1 week RMAE`) +
+  geom_point(aes(color=cut_number(`total cases`,n=4)),
+               alpha=0.25)+
+  geom_smooth(aes(color=cut_number(`total cases`,n=4)),
+                se=FALSE) +
+  geom_smooth(se=FALSE, color="black") + 
+  xlab("") + 
+  ylab("1 Wk. RMAE") +
+  guides(color=guide_legend(title="Case Quartiles")) +
+  scale_y_log10(limits = c(0.1,3.5)) +
+  theme(legend.position = "none")
+
+im4 <- all_the_data_relative_pull_cutoff %>% 
+  ggplot() + 
+  aes(x=Total_Black/Total_Pop, y=`4 week RMAE`) +
+  geom_point(aes(color=cut_number(`total cases`,n=4)),
+               alpha=0.25)+
+  geom_smooth(aes(color=cut_number(`total cases`,n=4)),
+                se=FALSE) +
+  geom_smooth(se=FALSE, color="black") + 
+  xlab("Prop Black Constituents") + 
+  ylab("4 Wk. RMAE") +
+  labs(color="Case Quartile")+
+  scale_y_log10(limits = c(0.1,3.5)) +
+  theme(legend.position = "none")
+
+
+plots <- plot_grid(im1,im3,im2,im4, labels = "auto" ,
+                   label_size = 10 ,label_x = 0.03,label_y = 1)
+legend <- get_legend(im4 + 
+                       guides(color = guide_legend(nrow = 1)) +
+                       theme(legend.position = "bottom"))
+plot_grid(plots, legend, ncol = 1, rel_heights = c(1, .1))
+```
+
+## Table 2
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cl|c|c|c|c|c|}
+\cline{3-7}
+\multicolumn{1}{l}{} &  & \multicolumn{5}{c|}{\textbf{Prop. Black Quartile}} \\ \hline
+\multicolumn{1}{|c|}{Case Quartile} & Range & lowest 25\% & Q2 & Q3 & highest 25\% & Overall \\ \hline
+\multicolumn{1}{|c|}{lowest 25\%} & {[}2, 1.09e3{]} & 6.059 & 6.559 & \cellcolor[HTML]{FD6864}7.794 & \cellcolor[HTML]{FD6864}7.632 & 6.647 \\ \hline
+\multicolumn{1}{|c|}{Q2} & (1.09e3, 2.64e3{]} & 14.103 & \cellcolor[HTML]{FFCCC9}14.882 & \cellcolor[HTML]{FD6864}17.706 & \cellcolor[HTML]{FFCCC9}15.147 & 14.912 \\ \hline
+\multicolumn{1}{|c|}{Q3} & (2.64e3, 6.82e3{]} & 25.853 & \cellcolor[HTML]{FFCCC9}29.088 & \cellcolor[HTML]{FD6864}29.603 & 28.912 & 28.515 \\ \hline
+\multicolumn{1}{|c|}{highest 25\%} & (6.82e3, 1.25e6{]} & 79.059 & 73.368 & 91.324 & \cellcolor[HTML]{FFCCC9}111.779 & 93.353 \\ \hline
+\multicolumn{1}{|c|}{Overall} &  & 10.279 & \cellcolor[HTML]{FD6864}19.588 & \cellcolor[HTML]{FD6864}35.618 & \cellcolor[HTML]{FD6864}29.5 & 20.735 \\ \hline
+\end{tabular}
+\caption{Pink for statistically significant at $\alpha=0.05$ and red for statistically significant at $\alpha=0.00333$ (from the Bonferroni Correction over 15 tests) when comparing to Quartile 1 of Prop. Black. across the case quartiles and overall}
+\label{tab:table2}
+\end{table}
+
+### Using a relative error metric to adjust for outcome level
+
+The relative mean absolute error (RMAE), computed as the error of the ensemble forecast divided by the error of the baseline forecast, showed less variation overall than the unscaled MAE values (Figures 3 and 4). The naive baseline model makes the same objective prediction in every county (predicting the most recent observation into the future), and therefore serves to adjust for the scale of cases in each county. The overall median 1-week ahead RMAE across all 3,117 US counties for which forecasts were made was 0.90, meaning that the ensemble forecast in 10% less error on average than the baseline when predicting one week ahead. For the middle 80% of counties sorted by relative performance of the ensemble, RMAE varied from 0.79 to 1.00.  The ensemble made more accurate forecasts than the baseline forecast in over 90% of all counties.
+
+The stability in the values of the relative error metric (RMAE) contrasts with the variation in the values of the mean absolute error (MAE), where differences between counties with different socio-demographics are measurable and in some instances significant (Figures 3 & 4, Table 2). The MAE was significantly larger in counties with larger proportions of black constituents (even when stratifying by the total number of cases in each county, Table 2). However, the RMAE values showed little variation as a function of the proportion of black constituents (Table 3). Within the counties with the highest number of cases, we observed a relatively constant pattern of RMAE across the race quartiles. Overall, these counties had an RMAE of 0.89 (11% less error than the baseline on average) and values for specific race-quartiles ranged from 0.89 to 0.92 (Table 3). This contrasts with the high variance in MAE across the same high-case counties, which showed an overall MAE value of 93.4 and ranged from 73.4 to 111.8 across race quartiles (Table 2). Tests for significant differences between groups of counties with different percentages of black constituents showed that in some comparisons ensemble showed more error (higher MAE) in groups of counties with larger black populations but the ensemble was significantly more accurate relative to the baseline (lower RMAE) in those same counties.
+
+We performed the Wilcoxon Rank- Sum test on the RMAE values similar to our analysis with MAE, in order to see if there are statistically significant differences in RMAE amongst the differing case and race quartiles. The results from comparing per case quartile and overall race quartiles 2, 3, and 4 to race quartile 1 resulted in 3 statistically significant lower RMAE values all within race quartile 4 with 2 remaining statistically significant after the bonferroni correction. These results show less variation in RMAE amongst the race quartiles compared to MAE and the significance values showing slight improvement in ensemble model accuracy. Of the 15 comparisons performed 13 (86.7%) were insignificant after bonferroni correction for RMAE and 8 of the 15 comparisons (53.3%) for MAE.
+
+## Figure 4
+```{r echo=FALSE}
+im1 <- all_the_data_pull_cutoff %>% 
+  ggplot() + 
+  aes(x=Total_Households_Below_Poverty/(Total_Households_Below_Poverty+
+                                          Total_Households_Above_Poverty), 
+      y=`1 week ahead MAE`) +
+  geom_point(aes(color=cut_number(`total cases`,n=4)),
+               alpha=0.25)+
+  geom_smooth(aes(color=cut_number(`total cases`,n=4)),
+                se=FALSE) +
+  geom_smooth(se=FALSE, color="black") + 
+  xlab("") + 
+  ylab("1 Wk. Ahead MAE") +
+  guides(color=guide_legend(title="Case Quartiles")) +
+  #ylim(0,12000) +
+  scale_y_log10(limits = c(NA,1200))+
+  theme(legend.position = "none")
+
+im2 <- all_the_data_pull_cutoff %>% 
+  ggplot() + 
+  aes(x=Total_Households_Below_Poverty/(Total_Households_Below_Poverty+
+                                          Total_Households_Above_Poverty), 
+      y=`4 week ahead MAE`) +
+  geom_point(aes(color=cut_number(`total cases`,n=4)),
+               alpha=0.25)+
+  geom_smooth(aes(color=cut_number(`total cases`,n=4)),
+                se=FALSE) +
+  geom_smooth(se=FALSE, color="black") + 
+  xlab("Prop Households in Poverty") + 
+  ylab("4 Wk. Ahead MAE") +
+  guides(color=guide_legend(title="Case Quartiles")) +
+  #ylim(0,12000) +
+  scale_y_log10(limits = c(NA,1200))+
+  theme(legend.position = "none")
+
+
+# rmae
+im3 <-all_the_data_relative_pull_cutoff %>% 
+  ggplot() + 
+  aes(x=Total_Households_Below_Poverty/(Total_Households_Below_Poverty+
+                                          Total_Households_Above_Poverty), 
+      y=`1 week RMAE`) +
+  geom_point(aes(color=cut_number(`total cases`,n=4)),
+               alpha=0.25)+
+  geom_smooth(aes(color=cut_number(`total cases`,n=4)),
+                se=FALSE) +
+  geom_smooth(se=FALSE, color="black") + 
+  xlab("") + 
+  ylab("1 Wk. RMAE") +
+  guides(color=guide_legend(title="Case Quartiles")) +
+  scale_y_log10(limits = c(0.1,3.5)) +
+  theme(legend.position = "none")
+
+im4 <- all_the_data_relative_pull_cutoff %>% 
+  ggplot() + 
+  aes(x=Total_Households_Below_Poverty/(Total_Households_Below_Poverty+
+                                          Total_Households_Above_Poverty), 
+      y=`4 week RMAE`) +
+  geom_point(aes(color=cut_number(`total cases`,n=4)),
+               alpha=0.25)+
+  geom_smooth(aes(color=cut_number(`total cases`,n=4)),
+                se=FALSE) +
+  geom_smooth(se=FALSE, color="black") + 
+  xlab("Prop Households in Poverty") + 
+  ylab("4 Wk. RMAE") +
+  labs(color="Case Quartiles") +
+  scale_y_log10(limits = c(0.1,3.5)) +
+  theme(legend.position = "none")
+
+plots <- plot_grid(im1,im3,im2,im4, labels = "auto",
+                   label_size = 10 ,label_x = 0.03,label_y = 1)
+legend <- get_legend(im4 + 
+                       guides(color = guide_legend(nrow = 1)) +
+                       theme(legend.position = "bottom"))
+plot_grid(plots, legend, ncol = 1, rel_heights = c(1, .1))
+```
+
+Table 3. 
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cl|c|c|c|c|c|}
+\cline{3-7}
+\multicolumn{1}{l}{} &  & \multicolumn{5}{c|}{Prop. Black Quartile} \\ \hline
+\multicolumn{1}{|c|}{Case Quartile} & Range & lowest 25\% & Q2 & Q3 & highest 25\% & Overall \\ \hline
+\multicolumn{1}{|c|}{lowest 25\%} & {[}2, 1.09e3{]} & 0.898 & 0.901 & 0.910 & 0.885 & 0.898 \\ \hline
+\multicolumn{1}{|c|}{Q2} & (1.09e3, 2.64e3{]} & 0.906 & 0.887 & 0.902 & \cellcolor[HTML]{FFCCC9}0.887 & 0.897 \\ \hline
+\multicolumn{1}{|c|}{Q3} & (2.64e3, 6.82e3{]} & 0.911 & 0.899 & 0.905 & \cellcolor[HTML]{FD6864}0.879 & 0.898 \\ \hline
+\multicolumn{1}{|c|}{highest 25\%} & (6.82e3, 1.25e6{]} & 0.923 & 0.890 & 0.889 & 0.894 & 0.891 \\ \hline
+\multicolumn{1}{|c|}{Overall} &  & 0.903 & 0.896 & 0.897 & \cellcolor[HTML]{FD6864}0.887 & 0.896 \\ \hline
+\end{tabular}
+\caption{Pink for statistically significant at $\alpha=0.05$ and red for statistically significant at $\alpha=0.00333$ (from the Bonferroni Correction over 15 tests) when comparing to Quartile 1 of Prop. Black. across the case quartiles and overall}
+\label{tab:table3}
+\end{table}
+
+### Discussion
+
