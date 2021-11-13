@@ -1,7 +1,6 @@
 ---
 title: "Figures, Tables, and Important Values"
 author: "Ariane Stark"
-date: "10/2/2021"
 output: pdf_document
 ---
 
@@ -736,7 +735,9 @@ im2 <- all_the_data_pull_cutoff %>%
   ylab("Log Scale 1  \n Week Ahead MAE")+
   labs(fill="Case Quartile")+
   scale_y_log10() +
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  scale_fill_manual(values = c("#fdcc8a","#fc8d59","#e34a33","#b30000"),
+                     labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 plots <- plot_grid(im1,im2, labels = "auto" ,ncol=1, 
                    label_size = 10 ,label_x = 0.09,label_y = 1)
@@ -765,7 +766,9 @@ im1 <- all_the_data_pull_cutoff %>%
   guides(color=guide_legend(title="Case Quartiles")) +
   #ylim(0,12000) +
   scale_y_log10(limits = c(NA,1200))+
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("#fdcc8a","#fc8d59","#e34a33","#b30000"),
+                     labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 im2 <- all_the_data_pull_cutoff %>% 
   ggplot() + 
@@ -780,7 +783,9 @@ im2 <- all_the_data_pull_cutoff %>%
   guides(color=guide_legend(title="Case Quartiles")) +
   #ylim(0,12000) +
   scale_y_log10(limits = c(NA,1200))+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  scale_color_manual(values = c("#fdcc8a","#fc8d59","#e34a33","#b30000"),
+                     labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 
 
@@ -796,8 +801,10 @@ im3 <- all_the_data_relative_pull_cutoff %>%
   xlab("") + 
   ylab("1 Wk. RMAE") +
   guides(color=guide_legend(title="Case Quartiles")) +
-  scale_y_log10(limits = c(0.1,3.5)) +
-  theme(legend.position = "none")
+  scale_y_log10(limits = c(0.4,1.5)) +
+  theme(legend.position = "none")+
+  scale_color_manual(values = c("#fdcc8a","#fc8d59","#e34a33","#b30000"),
+                     labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 im4 <- all_the_data_relative_pull_cutoff %>% 
   ggplot() + 
@@ -810,8 +817,10 @@ im4 <- all_the_data_relative_pull_cutoff %>%
   xlab("Prop Black Constituents") + 
   ylab("4 Wk. RMAE") +
   labs(color="Case Quartile")+
-  scale_y_log10(limits = c(0.1,3.5)) +
-  theme(legend.position = "none")
+  scale_y_log10(limits = c(0.4,1.5)) +
+  theme(legend.position = "none")+
+  scale_color_manual(values = c("#fdcc8a","#fc8d59","#e34a33","#b30000"),
+                     labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 
 plots <- plot_grid(im1,im3,im2,im4, labels = "auto" ,
@@ -839,7 +848,9 @@ im1 <- all_the_data_pull_cutoff %>%
   guides(color=guide_legend(title="Case Quartiles")) +
   #ylim(0,12000) +
   scale_y_log10(limits = c(NA,1200))+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  scale_color_manual(values = c("#fdcc8a","#fc8d59","#e34a33","#b30000"),
+                     labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 im2 <- all_the_data_pull_cutoff %>% 
   ggplot() + 
@@ -856,7 +867,9 @@ im2 <- all_the_data_pull_cutoff %>%
   guides(color=guide_legend(title="Case Quartiles")) +
   #ylim(0,12000) +
   scale_y_log10(limits = c(NA,1200))+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  scale_color_manual(values = c("#fdcc8a","#fc8d59","#e34a33","#b30000"),
+                     labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 
 # rmae
@@ -873,8 +886,10 @@ im3 <-all_the_data_relative_pull_cutoff %>%
   xlab("") + 
   ylab("1 Wk. RMAE") +
   guides(color=guide_legend(title="Case Quartiles")) +
-  scale_y_log10(limits = c(0.1,3.5)) +
-  theme(legend.position = "none")
+  scale_y_log10(limits = c(0.4,1.5)) +
+  theme(legend.position = "none")+
+  scale_color_manual(values = c("#fdcc8a","#fc8d59","#e34a33","#b30000"),
+                     labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 im4 <- all_the_data_relative_pull_cutoff %>% 
   ggplot() + 
@@ -889,8 +904,10 @@ im4 <- all_the_data_relative_pull_cutoff %>%
   xlab("Prop Households in Poverty") + 
   ylab("4 Wk. RMAE") +
   labs(color="Case Quartiles") +
-  scale_y_log10(limits = c(0.1,3.5)) +
-  theme(legend.position = "none")
+  scale_y_log10(limits = c(0.4,1.5)) +
+  theme(legend.position = "none")+
+  scale_color_manual(values = c("#fdcc8a","#fc8d59","#e34a33","#b30000"),
+                     labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 plots <- plot_grid(im1,im3,im2,im4, labels = "auto",
                    label_size = 10 ,label_x = 0.03,label_y = 1)
@@ -956,8 +973,13 @@ rownames(dataMatrix) <- c("1 wk Ahead MAE as a funct. of Prop. Black and Prop. P
                           "4 wk Ahead MAE as a funct. of Cases and Minority Prop.")
 
 dataTable <- as.table(dataMatrix)
-kableTable <- kable(dataTable, format = "simple", align = 'l') 
+kableTable <- kbl(dataTable,booktabs = T) 
 kableTable
+
+data_table_adj_r <- dataTable[,2] %>% 
+  as.data.frame() %>% 
+  rename("Adj. R Squared"=1)
+kbl(data_table_adj_r,booktabs = T) 
 ```
 
 
@@ -975,14 +997,14 @@ table_dat <- all_the_data_pull_cutoff %>%
   mutate("Black Prop. Quartile" = cut_number(Total_Black/Total_Pop,n=4,labels=FALSE) ) %>% 
   mutate("Black Prop. Quartile Interval" = cut_number(Total_Black/Total_Pop,n=4) ) %>% 
   mutate("Case Quartile Interval" = 
-           cut_number(`total cases`,n=4) ) %>%
+           cut_number(`total cases`,n=4,dig.lab=10) ) %>%
   select(c(`1 week ahead MAE`,`Case Quartile`,`Black Prop. Quartile`,
            `Black Prop. Quartile Interval`,`Case Quartile Interval`))
 
 table_by_2_dif_quart <- matrix(nrow = 5, ncol = 6)
 dimnames(table_by_2_dif_quart ) <-
-  list("Case Quartile" = c("lowest 25%", "Q2","Q3","highest 25%","Overall"),
-                    "Prop. Black Quartile" = c("range","lowest 25%", "Q2","Q3","highest 25%","Overall"))
+  list("Case Quartile" = c("Lowest 25%", "Q2","Q3","Highest 25%","Overall"),
+                    "Prop. Black Quartile" = c("County Total Cases","Lowest 25%", "Q2","Q3","Highest 25%","Overall"))
 for (i in 1:4) {
   for (j in 1:4) {
     vals <- table_dat %>% 
@@ -1019,27 +1041,131 @@ table_by_2_dif_quart[5,1]<-""
 table_by_2_dif_quart [5,6] <- 
   round(median(table_dat$`1 week ahead MAE`),3)
 
-table_by_2_dif_quart
+#table_by_2_dif_quart
+```
+
+## Table 2- MAE pvalues
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# MAE p-values
+table_dat <- all_the_data_pull_cutoff %>% 
+  mutate("Black Prop. Quartile" = cut_number(Total_Black/Total_Pop,n=4,labels=FALSE) ) %>% 
+  mutate("Black Prop. Quartile Interval" = cut_number(Total_Black/Total_Pop,n=4) ) %>% 
+  mutate("Case Quartile Interval" = 
+           cut_number(`total cases`,n=4,dig.lab=10) ) %>%
+  select(c(`1 week ahead MAE`,`Case Quartile`,`Black Prop. Quartile`,
+           `Black Prop. Quartile Interval`,`Case Quartile Interval`))
+
+p.val.MAE <- matrix(nrow = 5, ncol = 6)
+dimnames(p.val.MAE ) <-
+  list("Case Quartile" = c("lowest 25%", "Q2","Q3","highest 25%","Overall"),
+                    "Prop. Black Quartile" = c("County Total Cases","lowest 25%", "Q2","Q3","highest 25%","Overall"))
+for (i in 1:4) {
+  for (j in 2:4) {
+    vals <- table_dat %>% 
+      filter(`Black Prop. Quartile`==j) %>% 
+      filter(`Case Quartile`==i) %>% 
+      pull(`1 week ahead MAE`)
+    val_compare <- table_dat %>% 
+      filter(`Black Prop. Quartile`==1) %>% 
+      filter(`Case Quartile`==i) %>% 
+      pull(`1 week ahead MAE`)
+   
+    p.val.MAE[i,j+1]<-round(wilcox.test(x=vals,y=val_compare)$p.value,6)
+  }
+}
+
+#overall row
+for (j in 2:4) {
+  vals <- table_dat %>% 
+      filter(`Black Prop. Quartile`==j) %>% 
+      pull(`1 week ahead MAE`)
+  val_compare <- table_dat %>% 
+      filter(`Black Prop. Quartile`==1) %>% 
+      pull(`1 week ahead MAE`)
+  p.val.MAE [5,j+1] <- round(wilcox.test(x=vals,y=val_compare)$p.value,6)
+  
+}
+
+#overall column and first race quartile column
+for (i in 1:4) {
+  p.val.MAE [i,1+4+1] <- NA
+  p.val.MAE [i,1+1] <- NA
+}
+
+#range column
+for (i in 1:4) {
+  p.val.MAE [i,1] <- 
+    levels(table_dat$`Case Quartile Interval`)[i]
+}
+
+p.val.MAE[5,1]<-NA
+
+p.val.MAE [5,6] <- NA
+
+p.val.MAE <- as.data.frame(p.val.MAE)
 ```
 
 ## Table 2 - LaTex
 
+```{r echo=FALSE}
+table2_kable <- as.data.frame(table_by_2_dif_quart)
 
-\begin{table}[h]
-\centering
-\begin{tabular}{cl|c|c|c|c|c|}
-\cline{3-7}
-\multicolumn{1}{l}{} &  & \multicolumn{5}{c|}{\textbf{Prop. Black Quartile}} \\ \hline
-\multicolumn{1}{|c|}{Case Quartile} & Range & lowest 25\% & Q2 & Q3 & highest 25\% & Overall \\ \hline
-\multicolumn{1}{|c|}{lowest 25\%} & {[}2, 1.09e3{]} & 6.059 & 6.559 & \cellcolor[HTML]{FD6864}7.794 & \cellcolor[HTML]{FD6864}7.632 & 6.647 \\ \hline
-\multicolumn{1}{|c|}{Q2} & (1.09e3, 2.64e3{]} & 14.103 & \cellcolor[HTML]{FFCCC9}14.882 & \cellcolor[HTML]{FD6864}17.706 & \cellcolor[HTML]{FFCCC9}15.147 & 14.912 \\ \hline
-\multicolumn{1}{|c|}{Q3} & (2.64e3, 6.82e3{]} & 25.853 & \cellcolor[HTML]{FFCCC9}29.088 & \cellcolor[HTML]{FD6864}29.603 & 28.912 & 28.515 \\ \hline
-\multicolumn{1}{|c|}{highest 25\%} & (6.82e3, 1.25e6{]} & 79.059 & 73.368 & 91.324 & \cellcolor[HTML]{FFCCC9}111.779 & 93.353 \\ \hline
-\multicolumn{1}{|c|}{Overall} &  & 10.279 & \cellcolor[HTML]{FD6864}19.588 & \cellcolor[HTML]{FD6864}35.618 & \cellcolor[HTML]{FD6864}29.5 & 20.735 \\ \hline
-\end{tabular}
-\caption{Pink for statistically significant at $\alpha=0.05$ and red for statistically significant at $\alpha=0.00333$ (from the Bonferroni Correction over 15 tests) when comparing to Quartile 1 of Prop. Black. across the case quartiles and overall}
-\label{tab:table2}
-\end{table}
+level_headers_decimal <- c(levels(table_dat$`Black Prop. Quartile Interval`)[1],
+             levels(table_dat$`Black Prop. Quartile Interval`)[2],
+             levels(table_dat$`Black Prop. Quartile Interval`)[3],
+             levels(table_dat$`Black Prop. Quartile Interval`)[4])
+
+levels_headers_percent <- stringr::str_split_fixed(level_headers_decimal,",",2) %>%
+  as.data.frame() %>% 
+  mutate("first.char"=substr(V1,1,1)) %>% 
+  mutate("first.num"=substr(V1,2,nchar(V1))) %>% 
+  mutate("second.num"=substr(V2,1,(nchar(V2)-1))) %>% 
+  mutate("second.char"=substr(V2,nchar(V2),nchar(V2))) %>% 
+  mutate("first.num"=as.double(first.num)) %>% 
+  mutate("second.num"=as.double(second.num)) %>% 
+  mutate("first.percent"=scales::percent(first.num,accuracy = 0.1)) %>% 
+  mutate("second.percent"=scales::percent(second.num,accuracy = 0.1)) %>% 
+  mutate("interval"=paste(first.char,first.percent,",",
+                          second.percent,second.char)) %>% 
+  pull(interval)
+
+colnames(table2_kable) <- c("",levels_headers_percent,"")
+
+# race_quart_header_data_frame <- data_frame(
+#   "header"=c("County Group \n based on \n Quartiles of \n Total Cases"," ",
+#              levels_headers_percent[1],
+#              levels_headers_percent[2],
+#              levels_headers_percent[3],
+#              levels_headers_percent[4]," "),
+#   "col_span"=rep(1,7))
+
+kbl(table2_kable, booktabs = T) %>% 
+  kable_paper(full_width = F) %>% 
+  add_header_above(c("County Group based on Quartile \n of Total Cases"=2,
+                   "Lowest 25%"=1,"Q2"=1,"Q3"=1,"Highest 25%"=1,"Overall"=1)) %>%
+  add_header_above(c(" "=2,
+                     "County Group Based on Quartile of % Black Residents"=4,
+                     " "=1)) %>% 
+  column_spec(4,background = ifelse(as.double(p.val.MAE[,3])<0.05,
+                                                    ifelse(as.double(p.val.MAE[,3])
+                                                           <0.05/30,
+                                                           "#FD6864","#FFCCC9"),
+                                    "white"))%>% 
+  column_spec(5,background = ifelse(as.double(p.val.MAE[,4])<0.05,
+                                                    ifelse(as.double(p.val.MAE[,4])
+                                                           <0.05/30,
+                                                           "#FD6864","#FFCCC9"),
+                                    "white"))%>% 
+  column_spec(6,background = ifelse(as.double(p.val.MAE[,5])<0.05,
+                                                    ifelse(as.double(p.val.MAE[,5])
+                                                           <0.05/30,
+                                                           "#FD6864","#FFCCC9"),
+                                    "white")) %>% 
+  column_spec(7,border_left = T)
+
+```
+
 
 ## Table 3 - code
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -1051,8 +1177,8 @@ mutate("Case Quartile" = cut_number(`total cases`,n=4,labels=FALSE)) %>%
 
 table_by_2_dif_quart_rmae <- matrix(nrow = 5, ncol = 6)
 dimnames(table_by_2_dif_quart_rmae ) <-
-  list("Case Quartile" = c("lowest 25%", "Q2","Q3","highest 25%","Overall"),
-                    "Prop. Black Quartile" = c("range","lowest 25%", "Q2","Q3","highest 25%","Overall"))
+  list("Case Quartile" = c("Lowest 25%", "Q2","Q3","Highest 25%","Overall"),
+                    "Prop. Black Quartile" = c("County Total Cases","Lowest 25%", "Q2","Q3","Highest 25%","Overall"))
 for (i in 1:4) {
   for (j in 1:4) {
     vals <- table_dat_rmae %>% 
@@ -1090,29 +1216,103 @@ for (i in 1:4) {
 table_by_2_dif_quart_rmae[5,1]<-""
 
 table_by_2_dif_quart_rmae [5,6] <- 
-  round(median(table_dat$`1 week ahead MAE`),3)
+  round(median(table_dat_rmae$`1 week RMAE`),3)
 
 
-table_by_2_dif_quart_rmae
+#table_by_2_dif_quart_rmae
 ```
+
+
+
+## Table 3- RMAE pvalues
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# RMAE p-values
+
+p.val.RMAE <- matrix(nrow = 5, ncol = 6)
+dimnames(p.val.RMAE ) <-
+  list("Case Quartile" = c("lowest 25%", "Q2","Q3","highest 25%","Overall"),
+                    "Prop. Black Quartile" = c("County Total Cases","lowest 25%", "Q2","Q3","highest 25%","Overall"))
+
+for (i in 1:4) {
+  for (j in 2:4) {
+    vals <- table_dat_rmae %>% 
+      filter(`Black Prop. Quartile`==j) %>% 
+      filter(`Case Quartile`==i) %>% 
+      pull(`1 week RMAE`)
+    val_compare <- table_dat_rmae %>% 
+      filter(`Black Prop. Quartile`==1) %>% 
+      filter(`Case Quartile`==i) %>% 
+      pull(`1 week RMAE`)
+   
+    p.val.RMAE[i,j+1]<-round(wilcox.test(x=vals,y=val_compare)$p.value,6)
+  }
+}
+
+#overall row
+for (j in 2:4) {
+  vals <- table_dat_rmae %>% 
+      filter(`Black Prop. Quartile`==j) %>% 
+      pull(`1 week RMAE`)
+  val_compare <- table_dat_rmae %>% 
+      filter(`Black Prop. Quartile`==1) %>% 
+      pull(`1 week RMAE`)
+  p.val.RMAE [5,j+1] <- round(wilcox.test(x=vals,y=val_compare)$p.value,6)
+  
+}
+
+#overall column and first race quartile column
+for (i in 1:4) {
+  p.val.RMAE [i,1+4+1] <- NA
+  p.val.RMAE [i,1+1] <- NA
+}
+
+#range column
+for (i in 1:4) {
+  p.val.RMAE [i,1] <- 
+    levels(table_dat$`Case Quartile Interval`)[i]
+}
+
+p.val.RMAE[5,1]<-NA
+
+p.val.RMAE [5,6] <- NA
+
+p.val.RMAE <- as.data.frame(p.val.RMAE)
+```
+
 
 ## Table 3 - LaTex
 
-\begin{table}[h]
-\centering
-\begin{tabular}{cl|c|c|c|c|c|}
-\cline{3-7}
-\multicolumn{1}{l}{} &  & \multicolumn{5}{c|}{Prop. Black Quartile} \\ \hline
-\multicolumn{1}{|c|}{Case Quartile} & Range & lowest 25\% & Q2 & Q3 & highest 25\% & Overall \\ \hline
-\multicolumn{1}{|c|}{lowest 25\%} & {[}2, 1.09e3{]} & 0.898 & 0.901 & 0.910 & 0.885 & 0.898 \\ \hline
-\multicolumn{1}{|c|}{Q2} & (1.09e3, 2.64e3{]} & 0.906 & 0.887 & 0.902 & \cellcolor[HTML]{FFCCC9}0.887 & 0.897 \\ \hline
-\multicolumn{1}{|c|}{Q3} & (2.64e3, 6.82e3{]} & 0.911 & 0.899 & 0.905 & \cellcolor[HTML]{FD6864}0.879 & 0.898 \\ \hline
-\multicolumn{1}{|c|}{highest 25\%} & (6.82e3, 1.25e6{]} & 0.923 & 0.890 & 0.889 & 0.894 & 0.891 \\ \hline
-\multicolumn{1}{|c|}{Overall} &  & 0.903 & 0.896 & 0.897 & \cellcolor[HTML]{FD6864}0.887 & 0.896 \\ \hline
-\end{tabular}
-\caption{Pink for statistically significant at $\alpha=0.05$ and red for statistically significant at $\alpha=0.00333$ (from the Bonferroni Correction over 15 tests) when comparing to Quartile 1 of Prop. Black. across the case quartiles and overall}
-\label{tab:table3}
-\end{table}
+```{r echo=FALSE}
+table3_kable <- as.data.frame(table_by_2_dif_quart_rmae)
+
+colnames(table3_kable) <- c("",levels_headers_percent,"")
+
+kbl(table3_kable, booktabs = T) %>% 
+  kable_paper(full_width = F) %>% 
+  add_header_above(c("County Group based on Quartile \n of Total Cases"=2,
+                   "Lowest 25%"=1,"Q2"=1,"Q3"=1,"Highest 25%"=1,"Overall"=1)) %>%
+  add_header_above(c(" "=2,
+                     "County Group Based on Quartile of % Black Residents"=4,
+                     " "=1)) %>%  
+  column_spec(4,background = ifelse(as.double(p.val.RMAE[,3])<0.05,
+                                                    ifelse(as.double(p.val.RMAE[,3])
+                                                           <0.05/30,
+                                                           "#FD6864","#FFCCC9"),
+                                    "white"))%>% 
+  column_spec(5,background = ifelse(as.double(p.val.RMAE[,4])<0.05,
+                                                    ifelse(as.double(p.val.RMAE[,4])
+                                                           <0.05/30,
+                                                           "#FD6864","#FFCCC9"),
+                                    "white"))%>% 
+  column_spec(6,background = ifelse(as.double(p.val.RMAE[,5])<0.05,
+                                                    ifelse(as.double(p.val.RMAE[,5])
+                                                           <0.05/30,
+                                                           "#FD6864","#FFCCC9"),
+                                    "white")) %>% 
+  column_spec(7,border_left = T)
+
+```
 
 
 
@@ -1187,3 +1387,81 @@ all_the_data_pull_cutoff %>%
   
 
 ```
+
+
+
+## Exploratory Analysis of RMAE
+```{r}
+all_the_data_by_week_relative_pull_cutoff %>% 
+  ggplot(aes(x=as.factor(`last date of week`),
+             y=`1 week ahead absolute error`/`1 week ahead absolute error base`))+
+  geom_boxplot() +
+  scale_y_log10()+
+  theme(axis.text.x = element_text(angle = 90))+
+  xlab("Week")+
+  ylab("RMAE")
+```
+
+
+```{r}
+all_the_data_by_week_relative_pull_cutoff %>% 
+  mutate(rq = cut_number(Total_Black/Total_Pop,n=4)) %>%
+  ggplot(aes(x=`last date of week`,
+             y=`1 week ahead absolute error`/`1 week ahead absolute error base`,
+             color = rq))+
+  geom_smooth() +
+  #scale_y_log10()+
+  theme(axis.text.x = element_text(angle = 90))+
+  xlab("Week")+
+  ylab("RMAE")
+```
+
+
+```{r}
+all_the_data_by_week_relative_pull_cutoff %>% 
+  mutate(rq = cut_number(Total_Black/Total_Pop,n=4)) %>%
+  group_by(`last date of week`,rq) %>% 
+  mutate(median_e =median(`1 week ahead absolute error`,na.rm = TRUE),
+            median_b =median(`1 week ahead absolute error base`,na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x=`last date of week`,
+             y=median_e/median_b,
+             color = rq))+
+  geom_line() +
+  #scale_y_log10()+
+  theme(axis.text.x = element_text(angle = 90))+
+  xlab("Week")+
+  ylab("RMAE")
+```
+
+
+
+
+
+```{r}
+all_the_data_by_week_relative_pull_cutoff %>% 
+  group_by(`last date of week`) %>% 
+  summarise_at(vars("1 week ahead absolute error",
+                    "1 week ahead absolute error base"),
+               list("mean" = mean),
+               na.rm = TRUE) %>% 
+  ggplot(aes(x=`last date of week`,y=`1 week ahead absolute error_mean`/
+               `1 week ahead absolute error base_mean`))+
+  geom_line()
+```
+
+
+```{r}
+all_the_data_by_week_relative_pull_cutoff %>% 
+  group_by(`last date of week`) %>% 
+  summarise_at(vars("1 week ahead absolute error",
+                    "1 week ahead absolute error base"),
+               list("sum" = sum),
+               na.rm = TRUE) %>% 
+  ggplot(aes(x=`last date of week`,y=`1 week ahead absolute error_sum`/
+               `1 week ahead absolute error base_sum`))+
+  geom_line() +
+  ylab("RMAE")+
+  xlab("Date")
+```
+
