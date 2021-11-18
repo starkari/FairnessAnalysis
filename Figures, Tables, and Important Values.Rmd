@@ -721,16 +721,20 @@ plot_grid(plots, legend, ncol = 1, rel_heights = c(1, .1))
 ```{r echo=FALSE}
 im1 <- all_the_data_pull_cutoff %>% 
   ggplot()+
-  geom_boxplot(aes(x=cut_number(Total_Black/Total_Pop,4), 
-      y=`1 week ahead MAE`)) +
+  geom_boxplot(aes(x=cut_number(Total_Black/Total_Pop,4,
+                                labels=c("Lowest 25%","Q2","Q3","Highest 25%")), 
+      y=`1 week ahead MAE`),
+      outlier.size=0.75) +
   xlab("") + 
   ylab("Log Scale 1 \n Week Ahead MAE") +
   scale_y_log10()
 
 im2 <- all_the_data_pull_cutoff %>% 
   ggplot()+
-  geom_boxplot(aes(x=cut_number(Total_Black/Total_Pop,4), 
-      y=`1 week ahead MAE`, fill=as.factor(cut_number(`total cases`,n=4)))) +
+  geom_boxplot(aes(x=cut_number(Total_Black/Total_Pop,4,
+                                labels=c("Lowest 25%","Q2","Q3","Highest 25%")), 
+      y=`1 week ahead MAE`, fill=as.factor(cut_number(`total cases`,n=4))),
+      outlier.size=0.75) +
   xlab("Proportion of Black Constituents") +
   ylab("Log Scale 1  \n Week Ahead MAE")+
   labs(fill="Case Quartile")+
@@ -740,7 +744,7 @@ im2 <- all_the_data_pull_cutoff %>%
                      labels=c("Lowest 25%","Q2","Q3","Highest 25%"))
 
 plots <- plot_grid(im1,im2, labels = "auto" ,ncol=1, 
-                   label_size = 10 ,label_x = 0.09,label_y = 1)
+                   label_size = 10 ,label_x = 0.12,label_y = 1)
 legend <- get_legend(im2 + 
                        guides(color = guide_legend(nrow = 1)) +
                        theme(legend.position = "bottom"))
