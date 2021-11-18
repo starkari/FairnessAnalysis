@@ -1,6 +1,5 @@
-# FairnessAnalysis
-Fairness Analysis of the Reichlab COVID-19 Ensemble Model
-
+# Fairness Analysis
+A paper that analyzes the bias in the [COVID-19 Forecast Hub](https://covid19forecasthub.org/) Ensemble Model
 
 Notes about files in the repo
 
